@@ -105,3 +105,5 @@ dist
 
 # editor config
 .editorconfig
+
+.here/
