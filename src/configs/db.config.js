@@ -4,7 +4,7 @@ const db_config = {
   "development": {
     "username": env('DB_USER', "root"),
     "password": env('DB_PASS', ""),
-    "database": env('DB_DATABASE', "vetpicurean_web"),
+    "database": env('DB_NAME', "resvip_db"),
     "host": env("DB_HOST", "localhost"),
     "dialect": "mysql"
   },
