@@ -9,7 +9,6 @@ class HereApiService {
 
     constructor(){
         this.hereApiClient = axios.create({
-            baseURL: "https://geocode.search.hereapi.com/v1",
             headers: {
                 Authorization: `Bearer ${this.token}`,
                 'Accept': 'application/json',
@@ -42,15 +41,35 @@ class HereApiService {
      * @returns coordinates of address
      */
     async getCoords(address){
-        const resp =  await this.hereApiClient.get("/geocode",{
+        const resp =  await this.hereApiClient.get("https://geocode.search.hereapi.com/v1/geocode",{
             params: {
                 q: address
             }
         })
 
         return {
-            address: resp.items[0].title,
-            pos: resp.items[0].position,
+            address: resp.data.items[0].title,
+            pos: resp.data.items[0].position,
+        }
+    }
+
+    /**
+     * get valid address based on query
+     * @param {string} query address to query
+     * @returns list of valid addresses
+     */
+    async getAddresses(query) {
+        const resp = await this.hereApiClient.get("https://autosuggest.search.hereapi.com/v1/autosuggest",{
+            params: {
+                q: query,
+                at: "0.7893,113.9213"
+            }
+        })
+        console.log(resp.data.items);
+        return {
+            addresses: resp.data.items.map((i) => {
+                return i.title
+            })
         }
     }
 
