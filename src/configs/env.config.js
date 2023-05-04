@@ -22,7 +22,7 @@ const envs= {
  * @param {string | number | boolean} default_value
  * @returns value of env
  */
-function env(key) {
+function env(key, default_value) {
     return envs[key] ?? default_value
 }
 
