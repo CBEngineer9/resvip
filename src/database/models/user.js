@@ -1,7 +1,10 @@
 'use strict';
+const { getDB } = require("../../configs/db");
+const sequelize = getDB();
 const {
   Model
 } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -27,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    email: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
     contact_person_name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -37,15 +44,15 @@ module.exports = (sequelize, DataTypes) => {
     },
     company_address: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     company_lat: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     company_long: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     down_payment: {
       type: DataTypes.INTEGER,

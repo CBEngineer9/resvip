@@ -16,6 +16,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       contact_person_name: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -26,15 +30,15 @@ module.exports = {
       },
       company_address: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       company_lat: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       company_long: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
       },
       down_payment: {
         type: Sequelize.INTEGER,
