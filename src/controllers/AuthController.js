@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
-const User = require('../database/models/user')
+const { User } = require('../database/models')
 const Joi = require('joi')
 const HereAPIService = require('../services/HereAPIService')
 const addressValid = require('../validations/addressValid')

@@ -12,7 +12,7 @@ app.use(express.json({extended: true}))
 
 // TODO remove
 // HereAPIService.getAddresses("ngagel jaya tengah").then((r) => console.log(r));
-// HereAPIService.getCoords("Knowhere").then((r) => console.log(r));
+HereAPIService.getCoords("ngagel jaya tengah").then((r) => console.log(r));
 
 app.use(LogMiddeware);
 

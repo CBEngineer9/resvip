@@ -1,6 +1,10 @@
 const HereAPIService = require("../services/HereAPIService");
 
 class AddressessController {
+    /**
+     * Controller untuk get valid address dari hereAPI
+     * @author CBEngineer
+     */
     async getValidAddresses(req, res, next) {
         const validator = Joi.object({
             query: Joi.string().required()
