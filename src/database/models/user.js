@@ -26,7 +26,7 @@ User.init({
     allowNull: false,
   },
   email: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   contact_person_name: {
@@ -55,18 +55,6 @@ User.init({
   role: {
     type: DataTypes.ENUM(["A", "T", "R"]),
     allowNull: false,
-  },
-  created_at: {
-    allowNull: false,
-    type: DataTypes.DATE
-  },
-  updated_at: {
-    allowNull: false,
-    type: DataTypes.DATE
-  },
-  deleted_at: {
-    allowNull: true,
-    type: DataTypes.DATE,
   }
 }, {
   sequelize,
@@ -74,6 +62,7 @@ User.init({
   tableName: "Users",
   underscored: true,
   timestamps: true,
+  paranoid: true
 });
 
 module.exports = User;

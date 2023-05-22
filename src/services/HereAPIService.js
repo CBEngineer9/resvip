@@ -65,7 +65,7 @@ class HereApiService {
                 at: "0.7893,113.9213"
             }
         })
-        console.log(resp.data.items);
+        // console.log(resp.data.items);
         return {
             addresses: resp.data.items.map((i) => {
                 return i.title
@@ -106,6 +106,7 @@ class HereApiService {
     /**
      * Create signature string
      * @param {credObj} credObj
+     * @param {object} signatureParams
      * @returns {string} Signature String
      */
     createSignature(credObj, signatureParams){

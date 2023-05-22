@@ -7,8 +7,12 @@ const HereAPIService = require('./services/HereAPIService');
 const app = express()
 const port = 3000 
 
-HereAPIService.getAddresses("wisma kedung asem").then((r) => console.log(r));
-HereAPIService.getCoords("Wisma Kedung Asem Indah").then((r) => console.log(r));
+app.use(express.urlencoded({extended: true}))
+app.use(express.json({extended: true}))
+
+// TODO remove
+// HereAPIService.getAddresses("ngagel jaya tengah").then((r) => console.log(r));
+// HereAPIService.getCoords("Knowhere").then((r) => console.log(r));
 
 app.use(LogMiddeware);
 

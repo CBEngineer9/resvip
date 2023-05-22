@@ -2,9 +2,11 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
 const User = require('../database/models/user')
+const Joi = require('joi')
+const HereAPIService = require('../services/HereAPIService')
+const addressValid = require('../validations/addressValid')
 
 const register = async (req,res) => {
-    const { username, email, password, confirm_password, contact_person_name, company_name, company_address, company_lat, company_long, role } = req.body
 
     const schema = Joi.object({
         username: Joi.string().min(6).required().messages({
@@ -12,7 +14,7 @@ const register = async (req,res) => {
             "any.required": "Username harus diisi",
             "string.empty": "Username harus diisi",
         }),
-        email: Joi.string().email().messages({
+        email: Joi.string().email().required().messages({
             "string.email": "Email tidak valid",
             "any.required": "Email harus diisi",
             "string.empty": "Email harus diisi",
@@ -35,18 +37,18 @@ const register = async (req,res) => {
             "any.required": "Nama Perusahaan harus diisi",
             "string.empty": "Nama Perusahaan harus diisi",
         }),
-        company_address: Joi.string().required().messages({
+        company_address: Joi.string().external(addressValid).required().messages({
             "any.required": "Alamat Perusahaan harus diisi",
             "string.empty": "Alamat Perusahaan harus diisi",
         }),
-        company_lat: Joi.number().required().messages({
-            "any.required": "Latitude Perusahaan harus diisi",
-            "string.empty": "Latitude Perusahaan harus diisi",
-        }),
-        company_long: Joi.number().required().messages({
-            "any.required": "Longitude Perusahaan harus diisi",
-            "string.empty": "Longitude Perusahaan harus diisi",
-        }),
+        // company_lat: Joi.number().optional().messages({
+        //     "any.required": "Latitude Perusahaan harus diisi",
+        //     "string.empty": "Latitude Perusahaan harus diisi",
+        // }),
+        // company_long: Joi.number().optional().messages({
+        //     "any.required": "Longitude Perusahaan harus diisi",
+        //     "string.empty": "Longitude Perusahaan harus diisi",
+        // }),
         role: Joi.string().valid('A', 'T', 'R').required().messages({
             "any.required": "Role harus diisi",
             "string.empty": "Role harus diisi",
@@ -54,11 +56,19 @@ const register = async (req,res) => {
         })
     })
     try{
-        await schema.validateAsync(req.body)
+        const validated = await schema.validateAsync(req.body,{
+            convert: true
+        })
+        // console.log(validated.company_address);
     }
     catch(validationErr){
-        return res.status(400).send(msg(validationErr))
+        return res.status(400).send(validationErr)
     }
+
+    const { username, email, password, confirm_password, contact_person_name, company_name, company_address, role } = req.body
+
+    // get correct coord
+    const coords = await HereAPIService.getCoords(company_address)
 
     const newUser = await User.create({
         username: username,
@@ -66,9 +76,9 @@ const register = async (req,res) => {
         password: bcrypt.hashSync(password, 12),
         contact_person_name: contact_person_name,
         company_name: company_name,
-        company_address: company_address ? company_address : null,
-        company_lat: company_lat ? company_lat : null,
-        company_long: company_long ? company_long : null,
+        company_address: coords.address,
+        company_lat: coords.pos.lat,
+        company_long: coords.pos.lng,
         role: role
     })
 
@@ -103,7 +113,7 @@ const login = async (req, res) => {
         await schema.validateAsync(req.body)
     }
     catch(validationErr){
-        return res.status(400).send(msg(validationErr))
+        return res.status(400).send(validationErr)
     }
 
     const user = await User.findOne({
