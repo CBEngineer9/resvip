@@ -6,8 +6,11 @@ const Joi = require('joi')
 const HereAPIService = require('../services/HereAPIService')
 const addressValid = require('../validations/addressValid')
 
-const register = async (req,res) => {
+const { upload } = require('../utils/fileUpload')
+const fs = require('fs')
+const path = require('path')
 
+const register = async (req,res) => {
     const schema = Joi.object({
         username: Joi.string().min(6).required().messages({
             "string.min": "Username minimal 6 karakter",
@@ -82,9 +85,20 @@ const register = async (req,res) => {
         role: role
     })
 
-    return res.status(200).send({
-        message: "Register berhasil",
-        user: newUser
+    const uploadFile = upload.single('ktp')
+    uploadFile(req, res, function(err){
+        if(err){
+            return res.status(400).send({...err, msg:err.message})
+        }
+    
+        const newFilename = `${req.body.username}${path.extname(req.file.originalname).toLowerCase()}`
+        fs.renameSync(`../uploads/${req.file.filename}`, `../uploads/ktp/${newFilename}`)
+    
+        return res.status(200).send({
+            message: "Register berhasil",
+            user: newUser,
+            ktp: `../uploads/ktp/${newFilename}`
+        })
     })
 }
 
