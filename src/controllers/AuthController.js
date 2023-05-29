@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const Joi = require('joi')
 
 const { Admin, Seeker, Restaurant } = require('../database/models')
-const Joi = require('joi')
 const HereAPIService = require('../services/HereAPIService')
 const addressValid = require('../validations/addressValid')
 const fileSchema = require('../validations/fileValid')
@@ -56,7 +56,7 @@ const register = async (req,res) => {
         })
     })
     try{
-        const validated = await schema.validateAsync(req.body,{
+        await schema.validateAsync(req.body,{
             convert: true
         })
     }
