@@ -25,12 +25,12 @@ module.exports = {
       autoIncrement: false
     });
     await queryInterface.changeColumn('users','created_at',{
-      allowNull: false,
+      allowNull: true,
       type: Sequelize.DATE,
       defaultValue: Sequelize.literal("NULL")
     })
     await queryInterface.changeColumn('users','updated_at',{
-      allowNull: false,
+      allowNull: true,
       type: Sequelize.DATE,
       defaultValue: Sequelize.literal("NULL")
     });
