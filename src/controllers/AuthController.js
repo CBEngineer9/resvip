@@ -193,7 +193,7 @@ const login = async (req, res) => {
         id: user.id,
         username: user.username,
         name: user.name ? user.name : null,
-        role: user.role
+        role: role.toLowerCase()
     }, process.env.JWT_SECRET, {
         expiresIn: '1d'
     })
@@ -201,11 +201,10 @@ const login = async (req, res) => {
     return res.status(200).send({
         message: "Login berhasil",
         user: {
-            id: user.user_id,
-            email: user.email,
+            id: user.id,
             username: user.username,
-            name: user.company_name,
-            role: user.role
+            name: user.name ? user.name : null,
+            role: role
         },
         token: token
     })

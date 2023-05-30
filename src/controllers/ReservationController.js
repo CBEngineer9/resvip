@@ -3,10 +3,6 @@ const { Reservation, Seeker, Table } = require('../database/models')
 
 const addReservasi = async (req,res) => {
     const schema = Joi.object({
-        seeker_id: Joi.number().required().messages({
-            "any.required": "ID seeker harus diisi",
-            "number.base": "ID seeker harus berupa angka"
-        }),
         table_id: Joi.number().required().messages({
             "any.required": "ID table harus diisi",
             "number.base": "ID table harus berupa angka"
@@ -26,10 +22,10 @@ const addReservasi = async (req,res) => {
         })
     }
 
-    const { seeker_id, table_id, reservation_date } = req.body
+    const { table_id, reservation_date } = req.body
 
     const reservation = await Reservation.create({
-        seeker_id: seeker_id,
+        seeker_id: req.user.id,
         table_id: table_id,
         reservation_date: reservation_date,
         reservation_status: 'WAITING_APPROVAL'
@@ -63,6 +59,18 @@ const rescheduleReservasi = async (req,res) => {
 
     const { reservation_id, reservation_date } = req.body
     const reservation = await Reservation.findByPk(reservation_id)
+
+    if(!reservation){
+        return res.status(404).send({
+            message: 'Reservasi tidak ditemukan'
+        })
+    }
+    if(reservation.seeker_id != req.user.id){
+        return res.status(403).send({
+            message: 'Anda bukan pemilik reservasi ini'
+        })
+    }
+
     await reservation.update({
         reservation_date: reservation_date
     })
