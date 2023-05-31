@@ -146,8 +146,73 @@ const getAllReservasi = async (req,res) => {
     })
 }
 
+const updateReservasi = async (req,res) => {
+    const schemaBody = Joi.object({
+        table_id: Joi.number().required().messages({
+            "any.required": "ID table harus diisi",
+            "number.base": "ID table harus berupa angka"
+        }),
+        reservation_date: Joi.date().required().messages({
+            "any.required": "Tanggal reservasi harus diisi",
+            "date.base": "Tanggal reservasi harus berupa tanggal"
+        }),
+        reservation_status: Joi.string().valid(["WAITING_APPROVAL","APPROVED",'REJECTED']).required().messages({
+            "any.required": "Status reservasi harus diisi",
+            "string.base": "Tanggal reservasi harus berupa teks",
+            "valid.base": "Input status tidak sesuai"
+        }),
+    })
+    const schemaParam = Joi.object({
+        id: Joi.number().required().messages({
+            "any.required": "ID reservasi harus diisi",
+            "number.base": "ID reservasi harus berupa angka"
+        })
+    })
+    try{
+        await schemaBody.validateAsync(req.body,{
+            convert: true
+        })
+        await schemaParam.validateAsync(req.body,{
+            convert: true
+        })
+    } catch (err) {
+        return res.status(400).json({
+            message: err.message
+        })
+    }
+    
+    // not found
+    let reservation = await Reservation.getById(req.params.id);
+    if(!reservation) {
+        return res.status(404).send({
+            message: "Reservasi tidak ditemukan"
+        })
+    }
+
+    const { table_id, reservation_date, reservation_status } = req.body
+
+    // update
+    const update = await Reservation.update({
+        table_id: table_id,
+        reservation_date: reservation_date,
+        reservation_status: reservation_status
+    }, {
+        where: {
+            reservation_id: reservation.reservation_id,
+        }
+    })
+    
+    reservation = Reservation.getById(req.params.id);
+
+    return res.status(201).json({
+        message: "Reservasi berhasil diubah",
+        data: reservation
+    })
+}
+
 module.exports = {
     addReservasi,
     rescheduleReservasi,
-    getAllReservasi
+    getAllReservasi,
+    updateReservasi
 }
