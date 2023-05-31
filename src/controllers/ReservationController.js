@@ -1,5 +1,6 @@
 const Joi = require('joi')
-const { Reservation, Seeker, Table } = require('../database/models')
+const moment = require('moment')
+const { Reservation, Table, Restaurant } = require('../database/models')
 
 const addReservasi = async (req,res) => {
     const schema = Joi.object({
@@ -81,7 +82,68 @@ const rescheduleReservasi = async (req,res) => {
 }
 
 const getAllReservasi = async (req,res) => {
+    let { start_date, end_date } = req.query
+    const reservations = await Reservation.findAll({
+        where: {
+            seeker_id: req.user.id
+        },
+        attributes: [
+            ['reservation_id', 'id'],
+            ['reservation_date', 'date'],
+            ['reservation_status', 'status'],
+        ],
+        include: [
+            {
+                model: Table,
+                attributes: [
+                    ['table_name', 'table_name'],
+                    ['table_capacity', 'table_capacity'],
+                ]
+            },
+            {
+                model: Restaurant,
+                attributes: [
+                    ['restaurant_name', 'restaurant_name'],
+                    ['restaurant_address', 'restaurant_address']
+                ]
+            }
+        ]
+    })
 
+    const ret = []
+    reservations.forEach(reservation => {
+        if(start_date){
+            if(moment(reservation.date).isBefore(start_date)){
+                return
+            }
+        }
+        if(end_date){
+            if(moment(reservation.date).isAfter(end_date)){
+                return
+            }
+        }
+
+        const tmp = {
+            id: reservation.id,
+            date: reservation.date,
+            status: reservation.status,
+            restaurant: {
+                name: reservation.Restaurant.restaurant_name,
+                address: reservation.Restaurant.restaurant_address,
+                table: {
+                    name: reservation.Table.table_name,
+                    capacity: reservation.Table.table_capacity
+                }
+            }
+        }
+
+        ret.push(tmp)
+    })
+    
+    return res.status(200).send({
+        message: "Berhasil mendapatkan semua reservasi",
+        reservations: ret
+    })
 }
 
 module.exports = {
