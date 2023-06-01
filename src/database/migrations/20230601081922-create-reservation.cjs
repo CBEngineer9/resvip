@@ -40,7 +40,7 @@ module.exports = {
         }
       },
       reservation_date: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
         allowNull: false
       },
       reservation_status: {
