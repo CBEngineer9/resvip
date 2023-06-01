@@ -43,6 +43,9 @@ const register = async (req,res) => {
         lng: Joi.number().optional().messages({
 
         }),
+        cuisine: Joi.string().valid('Indonesian', 'Asian', 'Western').optional().messages({
+
+        }),
         down_payment: Joi.number().optional().messages({
 
         }),
@@ -64,7 +67,12 @@ const register = async (req,res) => {
         return res.status(400).send(validationErr)
     }
 
-    const { username, password, contact_person, name, address, role } = req.body
+    const { username, password, contact_person, name, address, down_payment, cuisine, role } = req.body
+    if(role == 'Restaurant' && (!name || !contact_person || !address || !down_payment || !cuisine)){
+        return res.status(400).send({
+            message: "Mohon lengkapi data restoran"
+        })
+    }
 
     // get correct coord
     const coords = await HereAPIService.getCoords(address)
@@ -91,6 +99,7 @@ const register = async (req,res) => {
             restaurant_address: coords.address,
             restaurant_lat: coords.pos.lat,
             restaurant_lng: coords.pos.lng,
+            restaurant_cuisine: cuisine,
             restaurant_down_payment: down_payment
         })
     }
