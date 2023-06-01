@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Reservation extends Model {
+  class Slot extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,43 +11,34 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      this.belongsTo(models.Seeker, {foreignKey: 'seeker_id'});
-      this.belongsTo(models.Table, {foreignKey: 'table_id'});
-      this.belongsTo(models.Slot, {foreignKey: 'slot_id'});
+      this.hasMany(models.Reservation, {foreignKey: 'slot_id'});
+      this.belongsTo(models.Restaurant, {foreignKey: 'restaurant_id'});
     }
   }
-  Reservation.init({
-    reservation_id: {
+  Slot.init({
+    slot_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
       autoIncrement: true
     },
-    seeker_id: {
+    restaurant_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    table_id: {
-      type: DataTypes.INTEGER,
+    start_time: {
+      type: DataTypes.TIME,
       allowNull: false
     },
-    slot_id: {
-      type: DataTypes.INTEGER,
+    end_time: {
+      type: DataTypes.TIME,
       allowNull: false
-    },
-    reservation_date: {
-      type: DataTypes.DATEONLY,
-      allowNull: false
-    },
-    reservation_status: {
-      type: DataTypes.ENUM("WAITING_APPROVAL","APPROVED",'REJECTED')
     }
   }, {
     sequelize,
-    modelName: 'Reservation',
-    tableName: 'reservations',
+    modelName: 'Slot',
     paranoid: true,
     underscored: true,
   });
-  return Reservation;
+  return Slot;
 };

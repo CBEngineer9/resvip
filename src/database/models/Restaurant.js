@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       this.hasMany(models.Table, {foreignKey: 'restaurant_id'});
       this.hasMany(models.Cuisine, {foreignKey: 'restaurant_id'});
+      this.hasMany(models.Slot, {foreignKey: 'restaurant_id'});
     }
   }
   Restaurant.init({

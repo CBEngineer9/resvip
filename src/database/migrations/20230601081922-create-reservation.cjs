@@ -29,6 +29,16 @@ module.exports = {
           key: 'table_id'
         }
       },
+      slot_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: {
+            tableName: "slots",
+          },
+          key: 'slot_id'
+        }
+      },
       reservation_date: {
         type: Sequelize.DATE,
         allowNull: false
