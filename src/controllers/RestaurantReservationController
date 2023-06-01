@@ -4,7 +4,7 @@ const { Reservation, Table, Slot, Seeker } = require('../database/models')
 const reservationValid = require('../validations/reservationValid')
 
 //restaurant get one reservasi by id
-const getReservasiById = async (req,res) => {
+const getReservationById = async (req,res) => {
     const schema = Joi.object({
         reservation_id: Joi.number().required().external(reservationValid).messages({
             "any.required": "ID reservasi harus diisi",
@@ -74,7 +74,7 @@ const getReservasiById = async (req,res) => {
 }
 
 //restaurant get all reservasi
-const getAllReservasi = async (req,res) => {
+const getAllReservation = async (req,res) => {
     const schema = Joi.object({
         start_date: Joi.date().format('DD/MM/YYYY').optional().messages({
             "date.format": "Format tanggal harus DD/MM/YYYY"
@@ -233,8 +233,8 @@ const updateReservasi = async (req,res) => {
 }
 
 const RestaurantReservationController = {
-    getReservasiById,
-    getAllReservasi,
+    getReservationById,
+    getAllReservation,
     updateReservasi
 }
 

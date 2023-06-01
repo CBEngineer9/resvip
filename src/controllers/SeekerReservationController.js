@@ -6,7 +6,7 @@ const slotValid = require('../validations/slotValid')
 const reservationValid = require('../validations/reservationValid')
 
 //seeker add reservasi
-const addReservasi = async (req,res) => {
+const addReservation = async (req,res) => {
     const schema = Joi.object({
         table_id: Joi.number().required().external(tableValid).messages({
             "any.required": "ID table harus diisi",
@@ -72,7 +72,7 @@ const addReservasi = async (req,res) => {
 }
 
 //seeker resechedule reservasi
-const rescheduleReservasi = async (req,res) => {
+const rescheduleReservation = async (req,res) => {
     const schema = Joi.object({
         reservation_id: Joi.number().required().external(reservationValid).messages({
             "any.required": "ID reservasi harus diisi",
@@ -149,7 +149,7 @@ const rescheduleReservasi = async (req,res) => {
 
 
 //seeker cancel reservasi
-const cancelReservasi = async (req,res) => {
+const cancelReservation = async (req,res) => {
     const { reservation_id } = req.params
     const reservation = await Reservation.findByPk(reservation_id)
 
@@ -168,7 +168,7 @@ const cancelReservasi = async (req,res) => {
 }
 
 //seeker get one reservasi by id
-const getReservasiById = async (req,res) => {
+const getReservationById = async (req,res) => {
     const schema = Joi.object({
         reservation_id: Joi.number().required().external(reservationValid).messages({
             "any.required": "ID reservasi harus diisi",
@@ -242,7 +242,7 @@ const getReservasiById = async (req,res) => {
 }
 
 //seeker get history reservasi
-const getHistoryReservasi = async (req,res) => {
+const getHistoryReservation = async (req,res) => {
     const schema = Joi.object({
         start_date: Joi.date().format('DD/MM/YYYY').optional().messages({
             "date.format": "Format tanggal harus DD/MM/YYYY"
@@ -349,11 +349,11 @@ const getHistoryReservasi = async (req,res) => {
 }
 
 const SeekerReservationController = {
-    addReservasi,
-    rescheduleReservasi,
-    cancelReservasi,
-    getReservasiById,
-    getHistoryReservasi
+    addReservation,
+    rescheduleReservation,
+    cancelReservation,
+    getReservationById,
+    getHistoryReservation
 }
 
 module.exports = SeekerReservationController

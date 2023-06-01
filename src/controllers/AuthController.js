@@ -210,6 +210,8 @@ const login = async (req, res) => {
     })
 }
 
-module.exports = {
+const AuthController = {
     register, login
 }
+
+module.exports = AuthController
