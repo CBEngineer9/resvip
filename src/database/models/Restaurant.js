@@ -36,6 +36,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    restaurant_cuisine: {
+      type: DataTypes.ENUM("INDONESIAN","ASIAN","WESTERN"),
+      allowNull: false,
+    },
     restaurant_contact_person: {
       type: DataTypes.STRING,
     },

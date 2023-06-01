@@ -29,11 +29,6 @@ module.exports = (sequelize, DataTypes) => {
     table_number: {
       type: DataTypes.INTEGER,
       allowNull: false
-    },
-    table_status: {
-      type: DataTypes.ENUM("AVAILABLE",'BOOKED'),
-      allowNull: false,
-      defaultValue: "AVAILABLE"
     }
   }, {
     sequelize,

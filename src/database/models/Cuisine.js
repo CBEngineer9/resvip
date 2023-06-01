@@ -3,6 +3,10 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
+  
+  /**
+   * @deprecated please use restaurant.restaurant_cuisine
+   */
   class Cuisine extends Model {
     /**
      * Helper method for defining associations.
