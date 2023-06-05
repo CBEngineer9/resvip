@@ -56,6 +56,15 @@ module.exports = (sequelize, DataTypes) => {
     restaurant_down_payment: {
       type: DataTypes.NUMBER,
       allowNull: false,
+    },
+    restaurant_distance: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return this.getDataValue('restaurant_distance');
+      },
+      set(value) {
+        this.setDataValue('restaurant_distance', value)
+      }
     }
   }, {
     sequelize,
