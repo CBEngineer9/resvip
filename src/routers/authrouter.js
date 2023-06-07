@@ -3,7 +3,7 @@ const AuthController = require("../controllers/AuthController")
 
 const router = Router()
 
-router.post('/register', AuthController.register)
+router.post('/register', AuthController.uploadKTP, AuthController.register)
 router.post('/login', AuthController.login)
 
 module.exports = router

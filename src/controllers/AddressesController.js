@@ -1,6 +1,7 @@
 const HereAPIService = require("../services/HereAPIService");
+const ExpressController = require("./_ExpressController");
 
-class AddressessController {
+class AddressessController extends ExpressController {
     /**
      * Controller untuk get valid address dari hereAPI
      * @author CBEngineer

@@ -7,220 +7,237 @@ const HereAPIService = require('../services/HereAPIService')
 const addressValid = require('../validations/addressValid')
 const fileSchema = require('../validations/fileValid')
 
-const { upload } = require('../utils/fileUpload')
+const upload  = require('../utils/fileUpload')
 const fs = require('fs')
 const path = require('path')
+const ExpressController = require('./_ExpressController')
 
-const register = async (req,res) => {
-    const schema = Joi.object({
-        username: Joi.string().min(6).required().messages({
-            "string.min": "Username minimal 6 karakter",
-            "any.required": "Username harus diisi",
-            "string.empty": "Username harus diisi",
-        }),
-        password: Joi.string().min(8).required().messages({
-            "string.min": "Password minimal 8 karakter",
-            "any.required": "Password harus diisi",
-            "string.empty": "Password harus diisi",
-        }),
-        confirm_password: Joi.string().valid(Joi.ref('password')).required().messages({
-            "any.only": "Konfirmasi password tidak sesuai",
-            "any.required": "Password harus diisi",
-            "string.empty": "Password harus diisi",
-        }),
-        name: Joi.string().optional().messages({
-
-        }),
-        contact_person: Joi.string().optional().messages({
-
-        }),
-        address: Joi.string().external(addressValid).optional().messages({
-
-        }),
-        lat: Joi.number().optional().messages({
-
-        }),
-        lng: Joi.number().optional().messages({
-
-        }),
-        cuisine: Joi.string().valid('Indonesian', 'Asian', 'Western').optional().messages({
-
-        }),
-        down_payment: Joi.number().optional().messages({
-
-        }),
-        role: Joi.string().valid('Admin', 'Seeker', 'Restaurant').required().messages({
-            "any.required": "Role harus diisi",
-            "string.empty": "Role harus diisi",
-            "any.valid": "Role hanya bisa Admin, Seeker, atau Restaurant"
-        }),
-        ktp: Joi.external(fileSchema).messages({
-            "any.required": "Mohon upload foto KTP",
+class AuthController extends ExpressController {
+    
+    uploadKTP(req,res,next){
+        const uploadFile = upload.single('ktp')
+        uploadFile(req, res, function(err){
+            if(err){
+                // throw new Error(err.message);
+                next(err);
+                // return
+                // return new Error(err.message)
+                // return res.status(400).send({...err, msg:err.message})
+            }
+            next();
         })
-    })
-    try{
+    }
+
+    async register(req,res, next) {
+        const schema = Joi.object({
+            username: Joi.string().min(6).required().messages({
+                "string.min": "Username minimal 6 karakter",
+                "any.required": "Username harus diisi",
+                "string.empty": "Username harus diisi",
+            }),
+            password: Joi.string().min(8).required().messages({
+                "string.min": "Password minimal 8 karakter",
+                "any.required": "Password harus diisi",
+                "string.empty": "Password harus diisi",
+            }),
+            confirm_password: Joi.string().valid(Joi.ref('password')).required().messages({
+                "any.only": "Konfirmasi password tidak sesuai",
+                "any.required": "Password harus diisi",
+                "string.empty": "Password harus diisi",
+            }),
+            name: Joi.string().optional().messages({
+
+            }),
+            contact_person: Joi.string().optional().messages({
+
+            }),
+            address: Joi.string().external(addressValid).optional().messages({
+
+            }),
+            lat: Joi.number().optional().messages({
+
+            }),
+            lng: Joi.number().optional().messages({
+
+            }),
+            cuisine: Joi.string().valid('Indonesian', 'Asian', 'Western').optional().messages({
+
+            }),
+            down_payment: Joi.number().optional().messages({
+
+            }),
+            role: Joi.string().valid('Admin', 'Seeker', 'Restaurant').required().messages({
+                "any.required": "Role harus diisi",
+                "string.empty": "Role harus diisi",
+                "any.valid": "Role hanya bisa Admin, Seeker, atau Restaurant"
+            }),
+            // ktp: Joi.external(fileSchema).messages({
+            //     "any.required": "Mohon upload foto KTP",
+            // })
+        })
+
         await schema.validateAsync(req.body,{
             convert: true
         })
-    }
-    catch(validationErr){
-        return res.status(400).send(validationErr)
-    }
 
-    const { username, password, contact_person, name, address, down_payment, cuisine, role } = req.body
-    if(role == 'Restaurant' && (!name || !contact_person || !address || !down_payment || !cuisine)){
-        return res.status(400).send({
-            message: "Mohon lengkapi data restoran"
-        })
-    }
-
-    // get correct coord
-    const coords = await HereAPIService.getCoords(address)
-
-    let newUser;
-    if(role = 'Admin'){
-        newUser = await Admin.create({
-            admin_username: username,
-            admin_password: password
-        })
-    }
-    else if(role=='Seeker'){
-        newUser = await Seeker.create({
-            seeker_username: username,
-            seeker_password: password
-        })
-    }
-    else if(role=='Restaurant'){
-        newUser = await Restaurant.create({
-            restaurant_username: username,
-            restaurant_password: password,
-            restaurant_name: name,
-            restaurant_contact_person: contact_person,
-            restaurant_address: coords.address,
-            restaurant_lat: coords.pos.lat,
-            restaurant_lng: coords.pos.lng,
-            restaurant_cuisine: cuisine,
-            restaurant_down_payment: down_payment
-        })
-    }
-
-    const uploadFile = upload.single('ktp')
-    uploadFile(req, res, function(err){
-        if(err){
-            return res.status(400).send({...err, msg:err.message})
+        // check file uploaded
+        if (!req.file) {
+            throw new Joi.ValidationError("Mohon upload foto KTP", [{
+                message: "Mohon upload foto KTP",
+                path: ["ktp"],
+                type: "custom"
+            }])
         }
-    
+        
+        // move file
+        // TODO make sure folder exist
         const newFilename = `${req.body.username}${path.extname(req.file.originalname).toLowerCase()}`
-        fs.renameSync(`../uploads/${req.file.filename}`, `../uploads/ktp/${newFilename}`)
-    
+        fs.renameSync(`./uploads/${req.file.filename}`, `./storage/ktp/${newFilename}`)
+
+        const { username, password, contact_person, name, address, down_payment, cuisine, role } = req.body
+        if(role == 'Restaurant' && (!name || !contact_person || !address || !down_payment || !cuisine)){
+            return res.status(400).send({
+                message: "Mohon lengkapi data restoran"
+            })
+        }
+
+        // get correct coord
+        const coords = await HereAPIService.getCoords(address)
+
+        let newUser;
+        if(role == 'Admin'){
+            newUser = await Admin.create({
+                admin_username: username,
+                admin_password: password
+            })
+        }
+        else if(role=='Seeker'){
+            newUser = await Seeker.create({
+                seeker_username: username,
+                seeker_password: password
+            })
+        }
+        else if(role=='Restaurant'){
+            newUser = await Restaurant.create({
+                restaurant_username: username,
+                restaurant_password: password,
+                restaurant_name: name,
+                restaurant_contact_person: contact_person,
+                restaurant_address: coords.address,
+                restaurant_lat: coords.pos.lat,
+                restaurant_lng: coords.pos.lng,
+                restaurant_cuisine: cuisine,
+                restaurant_down_payment: down_payment
+            })
+        }
+
         return res.status(200).send({
             message: "Register berhasil",
             user: newUser,
-            ktp: `../uploads/ktp/${newFilename}`
-        })
-    })
-}
-
-const login = async (req, res) => {
-    const { username, email, password } = req.body
-
-    if(!username && !email){
-        return res.status(400).send({
-            message: "Username atau Email harus diisi"
+            ktp: `/ktp/${newFilename}`
         })
     }
 
-    const schema = Joi.object({
-        username: Joi.string().required().messages({
-            "any.required": "Username harus diisi",
-            "string.empty": "Username harus diisi",
-        }),
-        password: Joi.string().required().messages({
-            "any.required": "Password harus diisi",
-            "string.empty": "Password harus diisi",
-        })
-    })
-    try{
-        await schema.validateAsync(req.body)
-    }
-    catch(validationErr){
-        return res.status(400).send(validationErr)
-    }
+    async login(req, res) {
+        const { username, email, password } = req.body
 
-    let user = null
-    user = await Admin.findOne({
-        where: {
-            admin_username: username
-        },
-        attributes: [
-            ['admin_id', 'id'],
-            ['admin_username', 'username'],
-            ['admin_password', 'password'],
-        ]
-    })
-    if(!user){
-        user = await Seeker.findOne({
+        if(!username && !email){
+            return res.status(400).send({
+                message: "Username atau Email harus diisi"
+            })
+        }
+
+        const schema = Joi.object({
+            username: Joi.string().required().messages({
+                "any.required": "Username harus diisi",
+                "string.empty": "Username harus diisi",
+            }),
+            password: Joi.string().required().messages({
+                "any.required": "Password harus diisi",
+                "string.empty": "Password harus diisi",
+            })
+        })
+        try{
+            await schema.validateAsync(req.body)
+        }
+        catch(validationErr){
+            return res.status(400).send(validationErr)
+        }
+
+        let user = null
+        user = await Admin.findOne({
             where: {
-                seeker_username: username
+                admin_username: username
             },
             attributes: [
-                ['seeker_id', 'id'],
-                ['seeker_username', 'username'],
-                ['seeker_password', 'password'],
+                ['admin_id', 'id'],
+                ['admin_username', 'username'],
+                ['admin_password', 'password'],
             ]
         })
-    }
-    if(!user){
-        user = await Restaurant.findOne({
-            where: {
-                restaurant_username: username
-            },
-            attributes: [
-                ['restaurant_id', 'id'],
-                ['restaurant_username', 'username'],
-                ['restaurant_password', 'password'],
-                ['restaurant_name', 'name'],
-            ]
-        })
-    }
-    if(!user){
-        return res.status(404).send({
-            message:{
-                email: "Username tidak terdaftar"
-            }
-        })
-    }
+        if(!user){
+            user = await Seeker.findOne({
+                where: {
+                    seeker_username: username
+                },
+                attributes: [
+                    ['seeker_id', 'id'],
+                    ['seeker_username', 'username'],
+                    ['seeker_password', 'password'],
+                ]
+            })
+        }
+        if(!user){
+            user = await Restaurant.findOne({
+                where: {
+                    restaurant_username: username
+                },
+                attributes: [
+                    ['restaurant_id', 'id'],
+                    ['restaurant_username', 'username'],
+                    ['restaurant_password', 'password'],
+                    ['restaurant_name', 'name'],
+                ]
+            })
+        }
+        if(!user){
+            return res.status(404).send({
+                message:{
+                    email: "Username tidak terdaftar"
+                }
+            })
+        }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password)
-    if(!isPasswordValid){
-        return res.status(400).send({
-            message: "Password salah"
-        })
-    }
+        const isPasswordValid = await bcrypt.compare(password, user.password)
+        if(!isPasswordValid){
+            return res.status(400).send({
+                message: "Password salah"
+            })
+        }
 
-    const token = jwt.sign({
-        id: user.id,
-        username: user.username,
-        name: user.name ? user.name : null,
-        role: role.toLowerCase()
-    }, process.env.JWT_SECRET, {
-        expiresIn: '1d'
-    })
-
-    return res.status(200).send({
-        message: "Login berhasil",
-        user: {
+        const token = jwt.sign({
             id: user.id,
             username: user.username,
             name: user.name ? user.name : null,
-            role: role
-        },
-        token: token
-    })
-}
+            role: role.toLowerCase()
+        }, process.env.JWT_SECRET, {
+            expiresIn: '1d'
+        })
 
-const AuthController = {
-    register, login
+        return res.status(200).send({
+            message: "Login berhasil",
+            user: {
+                id: user.id,
+                username: user.username,
+                name: user.name ? user.name : null,
+                role: role
+            },
+            token: token
+        })
+    }
 }
+// const AuthController = {
+//     register, login
+// }
 
-module.exports = AuthController
+module.exports = new AuthController()

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const env = require("./env.config.js")
+const env = require("../configs/env.config.js")
 
 const AuthMiddleware = (req, res, next) => {
     let token = req.headers['x-auth-token']

@@ -1,9 +1,10 @@
 const multer = require("multer")
 const fs = require("fs")
 const path = require("path")
+const Joi = require("joi")
 
 const upload = multer({
-    dest: "../uploads",
+    dest: "./uploads",
     limits: { fileSize: 5000000 },
     fileFilter: function (req, file, cb) {
         const rules = /jpeg|jpg|png/
@@ -13,19 +14,23 @@ const upload = multer({
 
         const cekExt = rules.test(fileExtension)
         const cekMime = rules.test(fileMimeType)
-
+        
         if (cekExt && cekMime) {
-            callback(null, true);
+            cb(null, true);
         } 
         else {
-            callback(null, false);
-            return callback(
-                new multer.MulterError(
+            // cb(null, false);
+            return cb(
+                new Joi.ValidationError(
                     "Tipe file harus .png, .jpg atau .jpeg"
                 )
             )
         }
     },
+    onError : function(err, next) {
+        console.log('error', err);
+        next(err);
+    }
 })
 
 module.exports = upload

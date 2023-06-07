@@ -1,6 +1,7 @@
-const Joi = require("joi");
+const Joi = require("joi/lib/errors");
 const { DatabaseError } = require("sequelize");
 const jwt = require('jsonwebtoken');
+const { MulterError } = require("multer");
 
 function ErrorMiddeware(err, req, res, next) {
     console.error(err.stack);
@@ -17,7 +18,12 @@ function ErrorMiddeware(err, req, res, next) {
         return res.status(400).json({
             message: err
         })
+    } else if (err instanceof MulterError) {
+        return res.status(400).json({
+            message: err.message
+        })
     } else {
+        console.log(err);
         res.status(500).json({
             message: 'Something broke!'
         });
