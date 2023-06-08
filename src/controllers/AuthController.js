@@ -89,8 +89,14 @@ class AuthController extends ExpressController {
             }])
         }
         
+        // make sure folder exist
+        if (!fs.existsSync('./storage')) {
+            fs.mkdirSync('./storage')
+        }
+        if (!fs.existsSync('./storage/ktp')) {
+            fs.mkdirSync('./storage/ktp')
+        }
         // move file
-        // TODO make sure folder exist
         const newFilename = `${req.body.username}${path.extname(req.file.originalname).toLowerCase()}`
         fs.renameSync(`./uploads/${req.file.filename}`, `./storage/ktp/${newFilename}`)
 

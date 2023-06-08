@@ -3,6 +3,11 @@ const fs = require("fs")
 const path = require("path")
 const Joi = require("joi")
 
+// make sure upload folder exist
+if (!fs.existsSync('./uploads')) {
+    fs.mkdirSync('./uploads')
+}
+
 const upload = multer({
     dest: "./uploads",
     limits: { fileSize: 5000000 },
