@@ -12,7 +12,7 @@ const envs= {
 
     LOG_LEVEL: (process.env.LOG_LEVEL)?.toUpperCase() ?? "NOTICE",
     LOG_FORMAT: process.env.LOG_FORMAT ?? "common", // common | JSON
-    JWT_KEY: process.env.JWT_KEY,
+    JWT_KEY: process.env.JWT_KEY ?? "RESTVIP",
 }
 
 

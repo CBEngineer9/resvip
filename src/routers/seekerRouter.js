@@ -5,7 +5,8 @@ const { SeekerMiddleware } = require("../middlewares/RoleMiddleware");
 
 const seekerRouter = Router();
 
-seekerRouter.get("/", SeekerMiddleware, SeekerController.getRestaurant)
+seekerRouter.get("/", SeekerMiddleware, SeekerController.fetchRestaurant)
+seekerRouter.get("/:id", SeekerMiddleware, SeekerController.getRestaurant)
 
 //reservations
 seekerRouter.post('/reservation', SeekerMiddleware, SeekerReservationController.addReservation)

@@ -24,4 +24,4 @@ class AddressessController extends ExpressController {
     }
 }
 
-module.exports = new TestController();
+module.exports = new AddressessController();

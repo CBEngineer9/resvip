@@ -11,6 +11,8 @@ const upload  = require('../utils/fileUpload')
 const fs = require('fs')
 const path = require('path')
 const ExpressController = require('./_ExpressController')
+const NotFoundError = require('../errors/NotFoundError')
+const env = require('../configs/env.config')
 
 class AuthController extends ExpressController {
     
@@ -114,19 +116,19 @@ class AuthController extends ExpressController {
         if(role == 'Admin'){
             newUser = await Admin.create({
                 admin_username: username,
-                admin_password: password
+                admin_password: await bcrypt.hash(password,10)
             })
         }
         else if(role=='Seeker'){
             newUser = await Seeker.create({
                 seeker_username: username,
-                seeker_password: password
+                seeker_password: await bcrypt.hash(password,10)
             })
         }
         else if(role=='Restaurant'){
             newUser = await Restaurant.create({
                 restaurant_username: username,
-                restaurant_password: password,
+                restaurant_password: await bcrypt.hash(password,10),
                 restaurant_name: name,
                 restaurant_contact_person: contact_person,
                 restaurant_address: coords.address,
@@ -147,11 +149,12 @@ class AuthController extends ExpressController {
     async login(req, res) {
         const { username, email, password } = req.body
 
-        if(!username && !email){
-            return res.status(400).send({
-                message: "Username atau Email harus diisi"
-            })
-        }
+        // TODO email tidak dipakai????
+        // if(!username && !email){
+        //     return res.status(400).send({
+        //         message: "Username atau Email harus diisi"
+        //     })
+        // }
 
         const schema = Joi.object({
             username: Joi.string().required().messages({
@@ -163,14 +166,11 @@ class AuthController extends ExpressController {
                 "string.empty": "Password harus diisi",
             })
         })
-        try{
-            await schema.validateAsync(req.body)
-        }
-        catch(validationErr){
-            return res.status(400).send(validationErr)
-        }
+
+        await schema.validateAsync(req.body)
 
         let user = null
+        let role = null
         user = await Admin.findOne({
             where: {
                 admin_username: username
@@ -181,6 +181,8 @@ class AuthController extends ExpressController {
                 ['admin_password', 'password'],
             ]
         })
+        role = "admin"
+
         if(!user){
             user = await Seeker.findOne({
                 where: {
@@ -192,6 +194,7 @@ class AuthController extends ExpressController {
                     ['seeker_password', 'password'],
                 ]
             })
+            role = "seeker"
         }
         if(!user){
             user = await Restaurant.findOne({
@@ -205,28 +208,33 @@ class AuthController extends ExpressController {
                     ['restaurant_name', 'name'],
                 ]
             })
+            role = "restaurant"
         }
         if(!user){
-            return res.status(404).send({
-                message:{
-                    email: "Username tidak terdaftar"
-                }
+            // return res.status(404).send({
+            //     message:{
+            //         email: "Username tidak terdaftar"
+            //     }
+            // })
+            throw new NotFoundError("Username tidak terdaftar", {
+                username
             })
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password)
+        const isPasswordValid = bcrypt.compareSync(password, user.dataValues.password)
         if(!isPasswordValid){
             return res.status(400).send({
                 message: "Password salah"
             })
         }
 
+        console.log(env("JWT_KEY"));
         const token = jwt.sign({
             id: user.id,
             username: user.username,
             name: user.name ? user.name : null,
             role: role.toLowerCase()
-        }, process.env.JWT_SECRET, {
+        }, env("JWT_KEY"), {
             expiresIn: '1d'
         })
 
