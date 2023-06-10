@@ -8,7 +8,7 @@ const reservationValid = require('../validations/reservationValid')
 
 class SeekerReservationController extends ExpressController {
     //seeker add reservasi
-    addReservation = async (req,res) => {
+    async addReservation (req,res) {
         const schema = Joi.object({
             table_id: Joi.number().required().external(tableValid).messages({
                 "any.required": "ID table harus diisi",
@@ -74,7 +74,7 @@ class SeekerReservationController extends ExpressController {
     }
 
     //seeker resechedule reservasi
-    rescheduleReservation = async (req,res) => {
+    async rescheduleReservation(req,res) {
         const schema1 = Joi.object({
             reservation_id: Joi.number().required().external(reservationValid).messages({
                 "any.required": "ID reservasi harus diisi",
@@ -156,7 +156,7 @@ class SeekerReservationController extends ExpressController {
 
 
     //seeker cancel reservasi
-    cancelReservation = async (req,res) => {
+    async cancelReservation(req,res){
         const schema = Joi.object({
             reservation_id: Joi.number().required().external(reservationValid).messages({
                 "any.required": "ID reservasi harus diisi",
@@ -191,7 +191,7 @@ class SeekerReservationController extends ExpressController {
     }
 
     //seeker get one reservasi by id
-    getReservationById = async (req,res) => {
+    async getReservationById(req,res){
         const schema = Joi.object({
             reservation_id: Joi.number().required().external(reservationValid).messages({
                 "any.required": "ID reservasi harus diisi",
@@ -265,7 +265,7 @@ class SeekerReservationController extends ExpressController {
     }
 
     //seeker get history reservasi
-    getHistoryReservation = async (req,res) => {
+    async getHistoryReservation (req,res) {
         const schema = Joi.object({
             start_date: Joi.date().format('DD/MM/YYYY').optional().messages({
                 "date.format": "Format tanggal harus DD/MM/YYYY"
