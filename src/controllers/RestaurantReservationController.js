@@ -7,6 +7,10 @@ const NotFoundError = require('../errors/NotFoundError')
 
 //restaurant get one reservasi by id
 class RestaurantReservationController extends ExpressController {
+    /**
+     * Inserts new reservation slot
+     * @author CBEngineer
+     */
     async insertSlot(req, res){
         const schema = Joi.object({
             slot_day: Joi.number().integer().min(0).max(6).required().messages({
@@ -41,6 +45,10 @@ class RestaurantReservationController extends ExpressController {
         })
     }
     
+    /**
+     * Updates reservation slot
+     * @author CBEngineer
+     */
     async updateSlot(req,res){
         // get slot
         const selected_slot = await Slot.findByPk(req.params.id)
@@ -75,6 +83,10 @@ class RestaurantReservationController extends ExpressController {
         })
     }
 
+    /**
+     * Deletes reservation slot
+     * @author CBEngineer
+     */
     async deleteSlot(req,res){
         const selected_slot = await Slot.findByPk(req.params.id);
         if (!selected_slot) {
