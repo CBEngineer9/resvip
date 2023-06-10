@@ -9,9 +9,21 @@ const NotFoundError = require('../errors/NotFoundError')
 class RestaurantReservationController extends ExpressController {
     async insertSlot(req, res){
         const schema = Joi.object({
-            slot_day: Joi.number().integer().min(0).max(6).required(),
-            start_time: Joi.date().format('HH:mm').required(),
-            end_time: Joi.date().format('HH:mm').greater(Joi.ref('start_time')).required(),
+            slot_day: Joi.number().integer().min(0).max(6).required().messages({
+                "any.required": "Username harus diisi",
+                "number.integer": "Slot harus berupa angka 0 sampai 6",
+                "number.min": "Slot harus berupa angka 0 sampai 6",
+                "number.max": "Slot harus berupa angka 0 sampai 6",
+            }),
+            start_time: Joi.date().format('HH:mm').required().messages({
+                "any.required": "Username harus diisi",
+                "date.format": "start_time harus memiliki format HH:mm"
+            }),
+            end_time: Joi.date().format('HH:mm').greater(Joi.ref('start_time')).required().messages({
+                "any.required": "Username harus diisi",
+                "date.format": "end_time harus memiliki format HH:mm",
+                "date.greater": "end_time harus melebihi start_time"
+            }),
         })
 
         const validated = await schema.validateAsync(req.body);
@@ -40,9 +52,18 @@ class RestaurantReservationController extends ExpressController {
 
         // validate body
         const schema = Joi.object({
-            slot_day: Joi.number().integer().min(0).max(6).optional(),
-            start_time: Joi.date().format('HH:mm').optional(),
-            end_time: Joi.date().format('HH:mm').optional(),
+            slot_day: Joi.number().integer().min(0).max(6).optional().messages({
+                "number.integer": "Slot harus berupa angka 0 sampai 6",
+                "number.min": "Slot harus berupa angka 0 sampai 6",
+                "number.max": "Slot harus berupa angka 0 sampai 6",
+            }),
+            start_time: Joi.date().format('HH:mm').optional().messages({
+                "date.format": "start_time harus memiliki format HH:mm"
+            }),
+            end_time: Joi.date().format('HH:mm').optional().messages({
+                "date.format": "end_time harus memiliki format HH:mm",
+                "date.greater": "end_time harus melebihi start_time"
+            }),
         }).or('slot_day','start_time','end_time')
 
         const validated = await schema.validateAsync(req.body);

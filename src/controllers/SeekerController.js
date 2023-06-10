@@ -12,14 +12,21 @@ class SeekerController {
      */
     async fetchRestaurant(req,res,next) {
         const validator = Joi.object({
-            cuisine: Joi.string().valid("INDONESIAN","ASIAN","WESTERN").optional(),
-            price_min: Joi.number().optional(),
-            price_max: Joi.number().optional(),
+            cuisine: Joi.string().valid("INDONESIAN","ASIAN","WESTERN").optional().messages({
+                "any.valid": "cuisine harus salah satu dari INDONESIAN, ASIAN, WESTERN"
+            }),
+            price_min: Joi.number().min(100).optional().messages({
+                "number.min": "price_max harus lebih besar dari 100",
+            }),
+            price_max: Joi.number().min(100).greater(Joi.ref("price_min")).optional().messages({
+                "number.min": "price_max harus lebih besar dari 100",
+                "number.greater": "price_max harus lebih besar dari price_min",
+            }),
             near_coords: Joi.object({
                 lat: Joi.number(),
                 lng: Joi.number()
-            }),
-            near: Joi.string(),
+            }).optional(),
+            near: Joi.string().optional(),
         }).and('price_min','price_max').oxor('near','near_coords')
 
         try {

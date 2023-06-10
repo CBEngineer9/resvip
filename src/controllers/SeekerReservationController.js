@@ -37,7 +37,7 @@ class SeekerReservationController extends ExpressController {
         const { table_id, slot_id, reservation_date } = req.body
 
         //match table and slot
-        const slot = await Slot.findByPk(slot_id)
+        const slot = await Slot.findByPk(slot_id)   
         const table = await Table.findByPk(table_id)
         if(table.restaurant_id != slot.restaurant_id){
             return res.status(400).json({

@@ -153,11 +153,11 @@ class AuthController extends ExpressController {
         const { username, password } = req.body
 
         const schema = Joi.object({
-            username: Joi.string().required().messages({
+            username: Joi.string().required().empty().messages({
                 "any.required": "Username harus diisi",
                 "string.empty": "Username harus diisi",
             }),
-            password: Joi.string().required().messages({
+            password: Joi.string().required().empty().messages({
                 "any.required": "Password harus diisi",
                 "string.empty": "Password harus diisi",
             })
