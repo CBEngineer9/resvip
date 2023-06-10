@@ -147,14 +147,7 @@ class AuthController extends ExpressController {
     }
 
     async login(req, res) {
-        const { username, email, password } = req.body
-
-        // TODO email tidak dipakai????
-        // if(!username && !email){
-        //     return res.status(400).send({
-        //         message: "Username atau Email harus diisi"
-        //     })
-        // }
+        const { username, password } = req.body
 
         const schema = Joi.object({
             username: Joi.string().required().messages({
@@ -211,11 +204,6 @@ class AuthController extends ExpressController {
             role = "restaurant"
         }
         if(!user){
-            // return res.status(404).send({
-            //     message:{
-            //         email: "Username tidak terdaftar"
-            //     }
-            // })
             throw new NotFoundError("Username tidak terdaftar", {
                 username
             })
@@ -250,8 +238,5 @@ class AuthController extends ExpressController {
         })
     }
 }
-// const AuthController = {
-//     register, login
-// }
 
 module.exports = new AuthController()
