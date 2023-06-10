@@ -3,14 +3,14 @@ const moment = require('moment')
 const { Reservation, Table, Slot, Seeker } = require('../database/models')
 const reservationValid = require('../validations/reservationValid')
 const ExpressController = require('./_ExpressController')
-const { default: NotFoundError } = require('../errors/NotFoundError')
+const NotFoundError = require('../errors/NotFoundError')
 
 //restaurant get one reservasi by id
 class RestaurantReservationController extends ExpressController {
     async insertSlot(req, res){
         const schema = Joi.object({
-            start_time: Joi.date().format('HH:mm'),
-            end_time: Joi.date().format('HH:mm'),
+            start_time: Joi.date().format('d HH:mm'),
+            end_time: Joi.date().format('d HH:mm'),
         })
 
         const validated = await schema.validateAsync(req.body);
