@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Slot',
-    paranoid: true,
+    paranoid: false,
     underscored: true,
   });
   return Slot;

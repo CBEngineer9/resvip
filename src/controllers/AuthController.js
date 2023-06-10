@@ -139,6 +139,9 @@ class AuthController extends ExpressController {
             })
         }
 
+        // prevent password to be seen
+        delete newUser.password;
+
         return res.status(200).send({
             message: "Register berhasil",
             user: newUser,
@@ -216,24 +219,19 @@ class AuthController extends ExpressController {
             })
         }
 
-        console.log(env("JWT_KEY"));
-        const token = jwt.sign({
-            id: user.id,
-            username: user.username,
-            name: user.name ? user.name : null,
+        let payload = {
+            id: user.dataValues.id,
+            username: user.dataValues.username,
+            name: user.dataValues.name ?? null,
             role: role.toLowerCase()
-        }, env("JWT_KEY"), {
+        }
+        const token = jwt.sign(payload, env("JWT_KEY"), {
             expiresIn: '1d'
         })
 
         return res.status(200).send({
             message: "Login berhasil",
-            user: {
-                id: user.id,
-                username: user.username,
-                name: user.name ? user.name : null,
-                role: role
-            },
+            user: payload,
             token: token
         })
     }

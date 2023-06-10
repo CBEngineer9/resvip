@@ -9,14 +9,18 @@ const NotFoundError = require('../errors/NotFoundError')
 class RestaurantReservationController extends ExpressController {
     async insertSlot(req, res){
         const schema = Joi.object({
-            start_time: Joi.date().format('d HH:mm'),
-            end_time: Joi.date().format('d HH:mm'),
+            slot_day: Joi.number().integer().min(0).max(6),
+            start_time: Joi.date().format('HH:mm'),
+            end_time: Joi.date().format('HH:mm'),
         })
 
         const validated = await schema.validateAsync(req.body);
 
+        console.log(validated.slot_day);
+
         const new_slot = await Slot.create({
-            restaurant_id: req.user.restaurant_id,
+            restaurant_id: req.user.id,
+            slot_day: validated.slot_day,
             start_time: validated.start_time,
             end_time: validated.end_time,
         })
