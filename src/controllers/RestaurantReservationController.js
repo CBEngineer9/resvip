@@ -11,8 +11,8 @@ class RestaurantReservationController extends ExpressController {
         const schema = Joi.object({
             slot_day: Joi.number().integer().min(0).max(6).required(),
             start_time: Joi.date().format('HH:mm').required(),
-            end_time: Joi.date().format('HH:mm').required(),
-        }) // TODO start less then end
+            end_time: Joi.date().format('HH:mm').greater(Joi.ref('start_time')).required(),
+        })
 
         const validated = await schema.validateAsync(req.body);
 
