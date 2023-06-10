@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    slot_day: {
+      type: DataTypes.ENUM("SUNDAY","MONDAY",'TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'),
+      allowNull: false
+    },
     start_time: {
       type: DataTypes.TIME,
       allowNull: false
