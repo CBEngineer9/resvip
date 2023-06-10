@@ -9,14 +9,12 @@ const NotFoundError = require('../errors/NotFoundError')
 class RestaurantReservationController extends ExpressController {
     async insertSlot(req, res){
         const schema = Joi.object({
-            slot_day: Joi.number().integer().min(0).max(6),
-            start_time: Joi.date().format('HH:mm'),
-            end_time: Joi.date().format('HH:mm'),
-        })
+            slot_day: Joi.number().integer().min(0).max(6).required(),
+            start_time: Joi.date().format('HH:mm').required(),
+            end_time: Joi.date().format('HH:mm').required(),
+        }) // TODO start less then end
 
         const validated = await schema.validateAsync(req.body);
-
-        console.log(validated.slot_day);
 
         const new_slot = await Slot.create({
             restaurant_id: req.user.id,
@@ -32,8 +30,28 @@ class RestaurantReservationController extends ExpressController {
     }
     
     async updateSlot(req,res){
-        
-        throw new Error("Not Yet Implemented")
+        // get slot
+        const selected_slot = await Slot.findByPk(req.params.id)
+        if (selected_slot == null) {
+            throw new NotFoundError("Slot tidak ditemukan", {
+                id: req.params.id
+            })
+        }
+
+        // validate body
+        const schema = Joi.object({
+            slot_day: Joi.number().integer().min(0).max(6).optional(),
+            start_time: Joi.date().format('HH:mm').optional(),
+            end_time: Joi.date().format('HH:mm').optional(),
+        }).or('slot_day','start_time','end_time')
+
+        const validated = await schema.validateAsync(req.body);
+        await selected_slot.update(validated)
+
+        return res.status(200).json({
+            message: "Berhasil mengupdate slot",
+            slot: selected_slot
+        })
     }
 
     async deleteSlot(req,res){

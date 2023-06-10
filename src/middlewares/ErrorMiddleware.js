@@ -2,7 +2,7 @@ const Joi = require("joi/lib/errors");
 const { DatabaseError } = require("sequelize");
 const jwt = require('jsonwebtoken');
 const { MulterError } = require("multer");
-const { default: ResponseError } = require("../errors/ResponseError");
+const ResponseError = require("../errors/ResponseError");
 
 function ErrorMiddeware(err, req, res, next) {
     console.error(err.stack);
