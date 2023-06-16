@@ -32,4 +32,4 @@ jobs:
           git status
           # git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
           git remote add glitch ${{ secrets.GLITCH_REPO }}
-          git push glitch main
+          # git push glitch main
