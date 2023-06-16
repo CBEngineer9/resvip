@@ -1,6 +1,7 @@
 const { default: axios } = require("axios");
 const generateRandomString = require("../utils/generateRandomString");
 var crypto = require('crypto');
+const env = require("../configs/env.config");
 
 class HereApiService {
     credFile = "./here/credentials.properties";
@@ -74,16 +75,14 @@ class HereApiService {
     }
 
     async getToken(){
-        const credObj = this.readCredentialFile();
-        
         const signatureParams = {
-            oauth_consumer_key: credObj.here_access_key_id,
+            oauth_consumer_key: env("HERE_ACCESS_KEY_ID"),
             oauth_nonce: generateRandomString(6),
             oauth_signature_method: "HMAC-SHA256",
             oauth_timestamp: Math.floor(Date.now() / 1000),
             oauth_version: "1.0"
         }
-        let signature = this.createSignature(credObj, signatureParams);
+        let signature = this.createSignature(signatureParams);
         signatureParams.oauth_signature = signature
 
         const ordered = Object.fromEntries(Object.entries(signatureParams).sort());
@@ -105,37 +104,16 @@ class HereApiService {
 
     /**
      * Create signature string
-     * @param {credObj} credObj
      * @param {object} signatureParams
      * @returns {string} Signature String
      */
-    createSignature(credObj, signatureParams){
+    createSignature(signatureParams){
         let signatureString = `grant_type=client_credentials&oauth_consumer_key=${signatureParams.oauth_consumer_key}&oauth_nonce=${signatureParams.oauth_nonce}&oauth_signature_method=HMAC-SHA256&oauth_timestamp=${signatureParams.oauth_timestamp}&oauth_version=1.0`
-        let baseString = `POST&${encodeURIComponent(credObj.here_token_endpoint_url)}&${encodeURIComponent(signatureString)}`
+        let baseString = `POST&${encodeURIComponent(env("HERE_TOKEN_ENDPOINT_URL"))}&${encodeURIComponent(signatureString)}`
         // console.log(baseString);
-        let signingKey = encodeURIComponent(credObj.here_access_key_secret) + "&"
+        let signingKey = encodeURIComponent(env("HERE_ACCESS_KEY_SECRET")) + "&"
         let hash = crypto.createHmac('sha256', signingKey).update(baseString).digest('base64');
         return hash;
-    }
-
-    /**
-     * read cred file based on credFile properties
-     * @returns here cred object
-     */
-    readCredentialFile(){
-        var fs = require("fs");
-        var content = fs.readFileSync(this.credFile);
-        var lines = content.toString().split('\n');
-        
-        var myObj = {};
-        
-        for(var line = 0; line < lines.length; line++){
-            var currentline = lines[line].split('=');
-            // console.log(currentline);
-            myObj[currentline[0].trim().replace(/["]/g, "").replace(/[.]/g,"_")] = currentline[1].trim().replace(/["]/g, "");
-        }
-
-        return myObj
     }
 } 
 

@@ -13,6 +13,12 @@ const envs= {
     LOG_LEVEL: (process.env.LOG_LEVEL)?.toUpperCase() ?? "NOTICE",
     LOG_FORMAT: process.env.LOG_FORMAT ?? "common", // common | JSON
     JWT_KEY: process.env.JWT_KEY ?? "RESTVIP",
+    
+    HERE_USER_ID: process.env.HERE_USER_ID,
+    HERE_CLIENT_ID: process.env.HERE_CLIENT_ID,
+    HERE_ACCESS_KEY_ID: process.env.HERE_ACCESS_KEY_ID,
+    HERE_ACCESS_KEY_SECRET: process.env.HERE_ACCESS_KEY_SECRET,
+    HERE_TOKEN_ENDPOINT_URL: process.env.HERE_TOKEN_ENDPOINT_URL,
 }
 
 
