@@ -32,4 +32,4 @@ jobs:
           git config push.default upstream
           # git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
           git remote add glitch ${{ secrets.GLITCH_REPO }}
-          git push glitch
+          git push glitch HEAD:main --force
