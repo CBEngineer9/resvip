@@ -29,6 +29,7 @@ jobs:
         run: |
           git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
           git config --global user.email "CBEngineer9@users.noreply.github.com"
+          git status
           # git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
           git remote add glitch ${{ secrets.GLITCH_REPO }}
           git push glitch main
