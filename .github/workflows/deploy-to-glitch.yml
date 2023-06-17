@@ -35,4 +35,4 @@ jobs:
           git fetch --unshallow origin
           # git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
           git remote add glitch ${{ secrets.GLITCH_REPO }}
-          git push glitch main:main --force
+          git push glitch main:master --force
