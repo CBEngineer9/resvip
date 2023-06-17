@@ -9,6 +9,9 @@
     "migrate": "npx sequelize-cli db:create && npx sequelize-cli db:migrate",
     "start": "node ./src/app.js"
   },
+  "engines": { 
+    "node": "16.16.x"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CBEngineer9/resvip.git"
