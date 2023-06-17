@@ -3,10 +3,10 @@ name: deploy-to-glitch
 run-name: Pushing to glitch
 on: 
   push:
-    branches:
-      - 'main'
-    # tags:
-    #   - '*'
+    # branches:
+    #   - 'main'
+    tags:
+      - '*'
 jobs:
   push-to-glitch:
     runs-on: ubuntu-latest
@@ -35,4 +35,4 @@ jobs:
           git fetch --unshallow origin
           # git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
           git remote add glitch ${{ secrets.GLITCH_REPO }}
-          git push glitch main:master --force
+          git push glitch HEAD:master --force
