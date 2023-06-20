@@ -41,6 +41,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     reservation_status: {
       type: DataTypes.ENUM("WAITING_APPROVAL","APPROVED",'REJECTED')
+    },
+    paid_down_payment: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     }
   }, {
     sequelize,

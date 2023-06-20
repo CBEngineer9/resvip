@@ -15,4 +15,7 @@ seekerRouter.delete('/reservation/:reservation_id', SeekerMiddleware, SeekerRese
 seekerRouter.get('/reservation', SeekerMiddleware, SeekerReservationController.getHistoryReservation)
 seekerRouter.get('/reservation/:reservation_id', SeekerMiddleware, SeekerReservationController.getReservationById)
 
+//down payment
+seekerRouter.post('/reservation/:reservation_id/pay', SeekerMiddleware, SeekerReservationController.payDownPayment);
+
 module.exports = seekerRouter;
