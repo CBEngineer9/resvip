@@ -223,7 +223,7 @@ class AuthController extends ExpressController {
         let payload = {
             id: user.dataValues.id,
             username: user.dataValues.username,
-            name: user.dataValues.name ?? null,
+            name: user.dataValues.name ?? '-',
             role: role.toLowerCase()
         }
         const token = jwt.sign(payload, env("JWT_KEY"), {

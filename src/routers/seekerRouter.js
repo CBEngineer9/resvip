@@ -5,9 +5,6 @@ const { SeekerMiddleware } = require("../middlewares/RoleMiddleware");
 
 const seekerRouter = Router();
 
-seekerRouter.get("/", SeekerMiddleware, SeekerController.fetchRestaurant)
-seekerRouter.get("/:id", SeekerMiddleware, SeekerController.getRestaurant)
-
 //reservations
 seekerRouter.post('/reservation', SeekerMiddleware, SeekerReservationController.addReservation)
 seekerRouter.put('/reservation/:reservation_id', SeekerMiddleware, SeekerReservationController.rescheduleReservation)
@@ -17,5 +14,9 @@ seekerRouter.get('/reservation/:reservation_id', SeekerMiddleware, SeekerReserva
 
 //down payment
 seekerRouter.post('/reservation/:reservation_id/pay', SeekerMiddleware, SeekerReservationController.payDownPayment);
+
+//restaurant
+seekerRouter.get("/", SeekerMiddleware, SeekerController.fetchRestaurant)
+seekerRouter.get("/:id", SeekerMiddleware, SeekerController.getRestaurant)
 
 module.exports = seekerRouter;

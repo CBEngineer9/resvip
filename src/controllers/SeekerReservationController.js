@@ -1,6 +1,7 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const moment = require('moment')
 const { Reservation, Table, Slot, Restaurant, Seeker } = require('../database/models')
+const { Op } = require('sequelize')
 const tableValid = require('../validations/tableValid')
 const slotValid = require('../validations/slotValid')
 const ExpressController = require('./_ExpressController')
@@ -49,11 +50,10 @@ class SeekerReservationController extends ExpressController {
             })
         }
     
-
         //cek slot day and reservation day
-        if(slot.slot_day+1 != moment(reservation_date, 'DD/MM/YYYY').isoWeekday()){
+        if(slot.slot_day != moment(reservation_date, 'DD/MM/YYYY').format('dddd').toUpperCase()){
             return res.status(400).json({
-                message: "Mohon pilih slot restoran yang sesuai"
+                message: "Mohon pilih slot sesuai tanggal reservasi"
             })
         }
         
@@ -164,7 +164,8 @@ class SeekerReservationController extends ExpressController {
             })
         }
 
-        const { reservation_id, reservation_date, table_id, slot_id } = req.body
+        const { reservation_date, table_id, slot_id } = req.body
+        const { reservation_id } = req.params
         const reservation = await Reservation.findByPk(reservation_id)
 
         if(reservation.seeker_id != req.user.id){
@@ -183,9 +184,9 @@ class SeekerReservationController extends ExpressController {
         }
 
         //cek slot day and reservation day
-        if(slot.slot_day+1 != moment(reservation_date, 'DD/MM/YYYY').isoWeekday()){
+        if(slot.slot_day != moment(reservation_date, 'DD/MM/YYYY').format('dddd').toUpperCase()){
             return res.status(400).json({
-                message: "Mohon pilih slot restoran yang sesuai"
+                message: "Mohon pilih slot sesuai tanggal reservasi"
             })
         }
         
@@ -193,11 +194,11 @@ class SeekerReservationController extends ExpressController {
         const reservationAda = await Reservation.findOne({
             where: {
                 table_id: table_id,
-                reservation_date: reservation_date,
+                reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
                 slot_id: slot_id
             }
         })
-        if(reservationAda){
+        if(reservationAda && reservationAda.reservation_id!=reservation_id){
             return res.status(400).json({
                 message: "Slot yang dipilih sudah direservasi, mohon pilih slot atau meja lain"
             })
@@ -206,7 +207,7 @@ class SeekerReservationController extends ExpressController {
         await reservation.update({
             table_id: table_id,
             slot_id: slot_id,
-            reservation_date: moment(reservation_date).format('YYYY-MM-DD'),
+            reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             reservation_status: 'WAITING_APPROVAL'
         })
 
@@ -281,6 +282,7 @@ class SeekerReservationController extends ExpressController {
         }
 
         const { reservation_id } = req.params
+        const reservationComplete = await Reservation.findByPk(reservation_id)
         const reservation = await Reservation.findByPk(reservation_id, {
             attributes: [
                 ['reservation_id', 'id'],
@@ -291,9 +293,15 @@ class SeekerReservationController extends ExpressController {
                 {
                     model: Table,
                     attributes: [
-                        ['table_name', 'table_name'],
-                        ['table_capacity', 'table_capacity'],
-                    ]
+                        ['table_number', 'table_number'],
+                    ],
+                    include: {
+                        model: Restaurant,
+                        attributes: [
+                            ['restaurant_name', 'restaurant_name'],
+                            ['restaurant_address', 'restaurant_address']
+                        ]
+                    }
                 },
                 {
                     model: Slot,
@@ -302,17 +310,10 @@ class SeekerReservationController extends ExpressController {
                         ['end_time', 'end_time'],
                     ]
                 },
-                {
-                    model: Restaurant,
-                    attributes: [
-                        ['restaurant_name', 'restaurant_name'],
-                        ['restaurant_address', 'restaurant_address']
-                    ]
-                }
             ]
         })
 
-        if(reservation.seeker_id != req.user.id){
+        if(reservationComplete.seeker_id != req.user.id){
             return res.status(403).send({
                 message: 'Anda bukan pemilik reservasi ini'
             })
@@ -320,18 +321,15 @@ class SeekerReservationController extends ExpressController {
 
         return res.status(200).send({
             reservation: {
-                id: reservation.id,
+                id: reservation.dataValues.id,
                 restaurant: {
-                    name: reservation.Restaurant.restaurant_name,
-                    address: reservation.Restaurant.restaurant_address,
-                    table: {
-                        name: reservation.Table.table_name,
-                        capacity: reservation.Table.table_capacity
-                    }
+                    name: reservation.Table.Restaurant.restaurant_name,
+                    address: reservation.Table.Restaurant.restaurant_address,
+                    table_number: reservation.Table.table_number
                 },
-                tanggal: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
-                jam: `${moment(reservation.Slot.start_time).format('HH:mm')} - ${moment(reservation.Slot.end_time).format('HH:mm')}`,
-                status: reservation.status,
+                tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                jam: `${moment(reservation.Slot.start_time, 'HH:mm:ss').format('HH:mm')} - ${moment(reservation.Slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
+                status: reservation.dataValues.status,
             }
         })
     }
@@ -377,9 +375,18 @@ class SeekerReservationController extends ExpressController {
                 {
                     model: Table,
                     attributes: [
-                        ['table_name', 'table_name'],
-                        ['table_capacity', 'table_capacity'],
-                    ]
+                        ['table_number', 'table_number'],
+                    ],
+                    include: {
+                        model: Restaurant,
+                        restaurant_name: {
+                            [Op.like]: `%${restaurant}%`
+                        },
+                        attributes: [
+                            ['restaurant_name', 'restaurant_name'],
+                            ['restaurant_address', 'restaurant_address']
+                        ]
+                    }
                 },
                 {
                     model: Slot,
@@ -388,16 +395,6 @@ class SeekerReservationController extends ExpressController {
                         ['end_time', 'end_time'],
                     ]
                 },
-                {
-                    model: Restaurant,
-                    restaurant_name: {
-                        [Op.like]: `%${restaurant}%`
-                    },
-                    attributes: [
-                        ['restaurant_name', 'restaurant_name'],
-                        ['restaurant_address', 'restaurant_address']
-                    ]
-                }
             ]
         })
 
@@ -414,24 +411,21 @@ class SeekerReservationController extends ExpressController {
                 }
             }
             if(restaurant){
-                if(reservation.Restaurant.restaurant_name.toLowerCase() != restaurant.toLowerCase()){
+                if(reservation.Table.Restaurant.restaurant_name.toLowerCase() != restaurant.toLowerCase()){
                     return
                 }
             }
 
             const tmp = {
-                id: reservation.id,
+                id: reservation.dataValues.id,
                 restaurant: {
-                    name: reservation.Restaurant.restaurant_name,
-                    address: reservation.Restaurant.restaurant_address,
-                    table: {
-                        name: reservation.Table.table_name,
-                        capacity: reservation.Table.table_capacity
-                    }
+                    name: reservation.Table.Restaurant.restaurant_name,
+                    address: reservation.Table.Restaurant.restaurant_address,
+                    table_number: reservation.Table.table_number
                 },
-                tanggal: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
-                jam: `${moment(reservation.Slot.start_time).format('HH:mm')} - ${moment(reservation.Slot.end_time).format('HH:mm')}`,
-                status: reservation.status,
+                tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMM YYYY'),
+                jam: `${moment(reservation.Slot.start_time, 'HH:mm:ss').format('HH:mm')} - ${moment(reservation.Slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
+                status: reservation.dataValues.status,
             }
 
             ret.push(tmp)
