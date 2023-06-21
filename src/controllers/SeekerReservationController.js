@@ -106,7 +106,12 @@ class SeekerReservationController extends ExpressController {
         
         return res.status(201).json({
             message: "Reservasi berhasil dibuat",
-            reservation: reservation
+            reservation: {
+                table_id: reservation.table_id,
+                slot_id: reservation.slot_id,
+                reservation_date: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                reservation_status: 'WAITING_APPROVAL'
+            }
         })
     }
 
@@ -187,7 +192,12 @@ class SeekerReservationController extends ExpressController {
 
         return res.status(200).send({
             message: "Reservasi berhasil di-reschedule",
-            reservation: reservation
+            reservation: {
+                table_id: reservation.table_id,
+                slot_id: reservation.slot_id,
+                reservation_date: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                reservation_status: 'WAITING_APPROVAL'
+            }
         })
     }
 
@@ -223,7 +233,12 @@ class SeekerReservationController extends ExpressController {
 
         return res.status(200).send({
             message: "Reservasi berhasil dibatalkan",
-            reservation: reservation
+            reservation: {
+                table_id: reservation.table_id,
+                slot_id: reservation.slot_id,
+                reservation_date: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                reservation_status: reservation.reservation_status
+            }
         })
     }
 
@@ -294,7 +309,7 @@ class SeekerReservationController extends ExpressController {
                         capacity: reservation.Table.table_capacity
                     }
                 },
-                tanggal: moment(reservation.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                tanggal: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
                 jam: `${moment(reservation.Slot.start_time).format('HH:mm')} - ${moment(reservation.Slot.end_time).format('HH:mm')}`,
                 status: reservation.status,
             }
@@ -369,12 +384,12 @@ class SeekerReservationController extends ExpressController {
         const ret = []
         reservations.forEach(reservation => {
             if(start_date){
-                if(moment(reservation.date).isBefore(moment(start_date,'DD/MM/YYYY'))){
+                if(moment(reservation.reservation_date).isBefore(moment(start_date,'DD/MM/YYYY'))){
                     return
                 }
             }
             if(end_date){
-                if(moment(reservation.date).isAfter(moment(end_date,'DD/MM/YYYY'))){
+                if(moment(reservation.reservation_date).isAfter(moment(end_date,'DD/MM/YYYY'))){
                     return
                 }
             }
@@ -394,7 +409,7 @@ class SeekerReservationController extends ExpressController {
                         capacity: reservation.Table.table_capacity
                     }
                 },
-                tanggal: moment(reservation.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                tanggal: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
                 jam: `${moment(reservation.Slot.start_time).format('HH:mm')} - ${moment(reservation.Slot.end_time).format('HH:mm')}`,
                 status: reservation.status,
             }
