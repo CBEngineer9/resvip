@@ -1,7 +1,7 @@
-const { Reservasi } = require('../database/models')
+const { Reservation } = require('../database/models')
 
 const reservationValid = async (value, helpers) => {
-    const reservation = await Reservasi.findByPk(value)
+    const reservation = await Reservation.findByPk(value)
     if(!reservation){
         throw new Error('Reservasi tidak ditemukan')
     }
