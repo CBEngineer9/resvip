@@ -23,6 +23,7 @@ module.exports = {
         'reservation_date': '2023-06-23',
         'reservation_status': 'APPROVED',
         'paid_down_payment': 1,
+        'payment_order_id': '.yna2'
       },
       {
         'seeker_id': 2,
@@ -31,6 +32,7 @@ module.exports = {
         'reservation_date': '2023-06-23',
         'reservation_status': 'WAITING_APPROVAL',
         'paid_down_payment': 0,
+        'payment_order_id': '.210a'
       },
     ])
 
