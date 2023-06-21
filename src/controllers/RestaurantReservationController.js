@@ -1,6 +1,6 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const moment = require('moment')
-const { Reservation, Table, Slot, Seeker } = require('../database/models')
+const { Reservation, Table, Slot, Seeker, sequelize } = require('../database/models')
 const reservationValid = require('../validations/reservationValid')
 const ExpressController = require('./_ExpressController')
 const NotFoundError = require('../errors/NotFoundError')
@@ -116,6 +116,11 @@ class RestaurantReservationController extends ExpressController {
         })
     
         const { reservation_id } = req.params
+        const reservationComplete = await Reservation.findByPk(reservation_id, {
+            include: {
+                model: Table,
+            },
+        })
         const reservation = await Reservation.findByPk(reservation_id, {
             attributes: [
                 ['reservation_id', 'id'],
@@ -126,8 +131,7 @@ class RestaurantReservationController extends ExpressController {
                 {
                     model: Table,
                     attributes: [
-                        ['table_name', 'table_name'],
-                        ['table_capacity', 'table_capacity'],
+                        ['table_number', 'table_number'],
                     ]
                 },
                 {
@@ -146,7 +150,7 @@ class RestaurantReservationController extends ExpressController {
             ]
         })
     
-        if(reservation.restaurant_id != req.user.id){
+        if(reservationComplete.Table.restaurant_id != req.user.id){
             return res.status(403).send({
                 message: 'Anda bukan pemilik reservasi ini'
             })
@@ -154,15 +158,12 @@ class RestaurantReservationController extends ExpressController {
     
         return res.status(200).send({
             reservation: {
-                id: reservation.id,
-                table: {
-                    name: reservation.Table.table_name,
-                    capacity: reservation.Table.table_capacity
-                },
+                id: reservation.dataValues.id,
+                table_number: reservation.Table.table_number,
                 seeker_id: reservation.Seeker.seeker_id,
-                tanggal: moment(reservation.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
-                jam: `${moment(reservation.Slot.start_time).format('HH:mm')} - ${moment(reservation.Slot.end_time).format('HH:mm')}`,
-                status: reservation.status,
+                tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                jam: `${moment(reservation.Slot.start_time, 'HH:mm:ss').format('HH:mm')} - ${moment(reservation.Slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
+                status: reservation.dataValues.status,
             }
         })
     }
@@ -190,9 +191,7 @@ class RestaurantReservationController extends ExpressController {
         let { start_date, end_date } = req.body
     
         const reservations = await Reservation.findAll({
-            where: {
-                restaurant_id: req.user.id
-            },
+            where: sequelize.where(sequelize.col('Table.restaurant_id'), req.user.id),
             attributes: [
                 ['reservation_id', 'id'],
                 ['reservation_date', 'date'],
@@ -202,8 +201,7 @@ class RestaurantReservationController extends ExpressController {
                 {
                     model: Table,
                     attributes: [
-                        ['table_name', 'table_name'],
-                        ['table_capacity', 'table_capacity'],
+                        ['table_number', 'table_number'],
                     ]
                 },
                 {
@@ -234,22 +232,14 @@ class RestaurantReservationController extends ExpressController {
                     return
                 }
             }
-            if(restaurant){
-                if(reservation.Restaurant.restaurant_name.toLowerCase() != restaurant.toLowerCase()){
-                    return
-                }
-            }
     
             const tmp = {
-                id: reservation.id,
-                table: {
-                    name: reservation.Table.table_name,
-                    capacity: reservation.Table.table_capacity
-                },
+                id: reservation.dataValues.id,
+                table_number: reservation.Table.table_number,
                 seeker_id: reservation.Seeker.seeker_id,
-                tanggal: moment(reservation.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
-                jam: `${moment(reservation.Slot.start_time).format('HH:mm')} - ${moment(reservation.Slot.end_time).format('HH:mm')}`,
-                status: reservation.status,
+                tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                jam: `${moment(reservation.Slot.start_time, 'HH:mm:ss').format('HH:mm')} - ${moment(reservation.Slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
+                status: reservation.dataValues.status,
             }
     
             ret.push(tmp)
