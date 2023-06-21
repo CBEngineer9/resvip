@@ -142,9 +142,10 @@ class AuthController extends ExpressController {
         // prevent password to be seen
         delete newUser.password;
 
-        return res.status(200).send({
+        return res.status(201).send({
             message: "Register berhasil",
             user: newUser,
+            role: role,
             ktp: `/ktp/${newFilename}`
         })
     }
