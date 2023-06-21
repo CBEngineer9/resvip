@@ -45,6 +45,10 @@ module.exports = (sequelize, DataTypes) => {
     paid_down_payment: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    payment_order_id: {
+      type: DataTypes.STRING,
+      defaultValue: null,
     }
   }, {
     sequelize,

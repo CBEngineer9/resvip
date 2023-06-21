@@ -16,6 +16,6 @@ seekerRouter.get('/reservation', SeekerMiddleware, SeekerReservationController.g
 seekerRouter.get('/reservation/:reservation_id', SeekerMiddleware, SeekerReservationController.getReservationById)
 
 //down payment
-seekerRouter.post('/reservation/:reservation_id/pay', SeekerMiddleware, SeekerReservationController.payDownPayment);
+seekerRouter.post('/reservation/:reservation_id/notification', SeekerMiddleware, SeekerReservationController.notifyPayment);
 
 module.exports = seekerRouter;

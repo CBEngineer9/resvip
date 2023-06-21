@@ -7,7 +7,6 @@ const ExpressController = require('./_ExpressController')
 const reservationValid = require('../validations/reservationValid')
 const midtransClient = require('midtrans-client');
 const { response } = require('express')
-const { literal } = require('sequelize')
 
 class SeekerReservationController extends ExpressController {
     //seeker add reservasi
@@ -41,7 +40,7 @@ class SeekerReservationController extends ExpressController {
         const { table_id, slot_id, reservation_date } = req.body;
 
         //match table and slot
-        const slot = await Slot.findByPk(slot_id)   
+        const slot = await Slot.findByPk(slot_id)
         const table = await Table.findByPk(table_id)
         if(table.restaurant_id != slot.restaurant_id){
             return res.status(400).json({
@@ -72,6 +71,9 @@ class SeekerReservationController extends ExpressController {
             })
         }
 
+        const payment_order_id = Math.random().toString(36).slice(1, 6);
+
+        // random 5 character for midtrans_order_id
         const reservation = await Reservation.create({
             seeker_id: req.user.id,
             table_id: table_id,
@@ -79,14 +81,7 @@ class SeekerReservationController extends ExpressController {
             reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             reservation_status: 'WAITING_APPROVAL',
             paid_down_payment: false,
-        })
-
-        const newReservation = await Reservation.findOne({
-            where: {
-                table_id: table_id,
-                reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-                slot_id: slot_id
-            }
+            midtrans_order_id: payment_order_id,
         })
 
         // charge midtrans
@@ -97,15 +92,18 @@ class SeekerReservationController extends ExpressController {
         });
         const restaurant = await Restaurant.findByPk(table.restaurant_id);
         const seeker = await Seeker.findByPk(req.user.id);
-        // 5 percent potongan dp
+        // 5 persen potongan dp
         const parameter = {
             "payment_type": "bank_transfer",
             "transaction_details": {
                 "gross_amount": restaurant.restaurant_down_payment * 105/100,
-                "order_id": "reservation_id_" + newReservation.reservation_id,
+                "order_id": payment_order_id,
             },
             "bank_transfer":{
                 "bank": req.body.bank_name.toLowerCase(),
+            },
+            "customer_details": {
+                "first_name": seeker.username
             }
         };
         core.charge(parameter)
@@ -193,7 +191,7 @@ class SeekerReservationController extends ExpressController {
         const reservationAda = await Reservation.findOne({
             where: {
                 table_id: table_id,
-                reservation_date: reservation_date,
+                reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
                 slot_id: slot_id
             }
         })
@@ -206,7 +204,7 @@ class SeekerReservationController extends ExpressController {
         await reservation.update({
             table_id: table_id,
             slot_id: slot_id,
-            reservation_date: moment(reservation_date).format('YYYY-MM-DD'),
+            reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             reservation_status: 'WAITING_APPROVAL'
         })
 
@@ -442,21 +440,6 @@ class SeekerReservationController extends ExpressController {
         })
     }
 
-    async payDownPayment(req, res) {
-        const schema = Joi.object({
-            payment_type: Joi.date().format('DD/MM/YYYY').optional().messages({
-                "date.format": "Format tanggal harus DD/MM/YYYY"
-            }),
-            nominal: Joi.date().format('DD/MM/YYYY').optional().messages({
-                "date.format": "Format tanggal harus DD/MM/YYYY"
-            }),
-            restaurant: Joi.string().optional().messages({
-                "string.base": "Nama restaurant harus berupa teks"
-            })
-        })
-        
-    }
-
     async notifyPayment (req, res) {
         let apiClient = new midtransClient.Snap({
             isProduction : false,
@@ -465,7 +448,7 @@ class SeekerReservationController extends ExpressController {
         });
     
         apiClient.transaction.notification(notificationJson)
-        .then((statusResponse)=>{
+        .then(async (statusResponse)=>{
             let orderId = statusResponse.order_id;
             let transactionStatus = statusResponse.transaction_status;
             let fraudStatus = statusResponse.fraud_status;
@@ -478,15 +461,20 @@ class SeekerReservationController extends ExpressController {
                 if (fraudStatus == 'challenge'){
                     // TODO set transaction status on your database to 'challenge'
                     // and response with 200 OK
-                    
                 } else if (fraudStatus == 'accept'){
                     // TODO set transaction status on your database to 'success'
                     // and response with 200 OK
-
                 }
             } else if (transactionStatus == 'settlement'){
                 // TODO set transaction status on your database to 'success'
                 // and response with 200 OK
+                const update = await reservation.update({
+                    paid_down_payment: true,
+                }, {
+                    where: {
+                        order_id: statusResponse.order_id
+                    }
+                })
             } else if (transactionStatus == 'cancel' ||
               transactionStatus == 'deny' ||
               transactionStatus == 'expire'){
