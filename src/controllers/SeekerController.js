@@ -3,7 +3,7 @@ const { User, sequelize } = require("../database/models");
 const { Op, QueryTypes } = require("sequelize");
 const { Sequelize, Restaurant } = require("../database/models");
 const HereAPIService = require("../services/HereAPIService");
-const { default: NotFoundError } = require("../errors/NotFoundError");
+const NotFoundError = require("../errors/NotFoundError");
 
 class SeekerController {
     /**
@@ -107,14 +107,22 @@ class SeekerController {
         // validate id restaurant
         const restaurant = await Restaurant.findByPk(req.params.id)
         if (!restaurant) {
-            throw new NotFoundError("Restaurant ID tidak ditemukan",{
+            throw new NotFoundError("ID Restaurant tidak ditemukan",{
                 id: req.params.id
             })
         }
 
         return res.status(200).json({
             message: "Berhasil mendapatkan restaurant",
-            restaurant
+            restaurant: {
+                restaurant_id: req.params.id,
+                restaurant_name: restaurant.restaurant_name,
+                restaurant_cuisine: restaurant.restaurant_cuisine,
+                restaurant_contact_person: restaurant.restaurant_contact_person,
+                restaurant_address: restaurant.restaurant_address,
+                restaurant_lat: restaurant.restaurant_lat,
+                restaurant_lng: restaurant.restaurant_lng,
+            }
         })
     }
 
