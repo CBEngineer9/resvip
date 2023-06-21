@@ -329,8 +329,8 @@ class SeekerReservationController extends ExpressController {
             reservation: {
                 id: reservation.dataValues.id,
                 restaurant: {
-                    name: reservation.Table.Restaurant.restaurant_name,
-                    address: reservation.Table.Restaurant.restaurant_address,
+                    nama: reservation.Table.Restaurant.restaurant_name,
+                    alamat: reservation.Table.Restaurant.restaurant_address,
                     table_number: reservation.Table.table_number
                 },
                 tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
@@ -425,8 +425,8 @@ class SeekerReservationController extends ExpressController {
             const tmp = {
                 id: reservation.dataValues.id,
                 restaurant: {
-                    name: reservation.Table.Restaurant.restaurant_name,
-                    address: reservation.Table.Restaurant.restaurant_address,
+                    nama: reservation.Table.Restaurant.restaurant_name,
+                    alamat: reservation.Table.Restaurant.restaurant_address,
                     table_number: reservation.Table.table_number
                 },
                 tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMM YYYY'),
