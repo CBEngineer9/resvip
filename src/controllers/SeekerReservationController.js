@@ -71,7 +71,7 @@ class SeekerReservationController extends ExpressController {
             })
         }
 
-        const payment_order_id = Math.random().toString(36).slice(1, 6);
+        const payment_order_id = Math.random().toString(36).slice(2, 10);
 
         // random 5 character for midtrans_order_id
         const reservation = await Reservation.create({
@@ -116,7 +116,15 @@ class SeekerReservationController extends ExpressController {
                         reservation_date: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
                         reservation_status: 'WAITING_APPROVAL'
                     },
-                    payment: chargeResponse
+                    payment: {
+                        order_id: chargeResponse.order_id,
+                        transaction_id: chargeResponse.transaction_id,
+                        total: `Rp. ${chargeResponse.gross_amount}`,
+                        transaction_time: chargeResponse.transaction_time,
+                        bank: chargeResponse.va_numbers[0].bank.toUpperCase(),
+                        va_number: chargeResponse.va_numbers[0].va_number,
+                        expiry_time: chargeResponse.expiry_time,
+                    }
                 })
             })
             .catch((e)=>{
@@ -462,13 +470,18 @@ class SeekerReservationController extends ExpressController {
             } else if (transactionStatus == 'settlement'){
                 // TODO set transaction status on your database to 'success'
                 // and response with 200 OK
-                const update = await reservation.update({
+                const update = await Reservation.update({
                     paid_down_payment: true,
                 }, {
                     where: {
-                        order_id: statusResponse.order_id
+                        payment_order_id: statusResponse.order_id
                     }
                 })
+
+                return res.status(200).send({
+                    message: "Berhasil membayar down payment"
+                })
+            
             } else if (transactionStatus == 'cancel' ||
               transactionStatus == 'deny' ||
               transactionStatus == 'expire'){
