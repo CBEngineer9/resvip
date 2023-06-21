@@ -49,6 +49,14 @@ class SeekerReservationController extends ExpressController {
             })
         }
     
+
+        //cek slot day and reservation day
+        if(slot.slot_day+1 != moment(reservation_date, 'DD/MM/YYYY').isoWeekday()){
+            return res.status(400).json({
+                message: "Mohon pilih slot restoran yang sesuai"
+            })
+        }
+        
         //cek slot & table available
         const reservationAda = await Reservation.findOne({
             where: {
@@ -169,6 +177,13 @@ class SeekerReservationController extends ExpressController {
         const slot = await Slot.findByPk(slot_id)
         const table = await Table.findByPk(table_id)
         if(table.restaurant_id != slot.restaurant_id){
+            return res.status(400).json({
+                message: "Mohon pilih slot restoran yang sesuai"
+            })
+        }
+
+        //cek slot day and reservation day
+        if(slot.slot_day+1 != moment(reservation_date, 'DD/MM/YYYY').isoWeekday()){
             return res.status(400).json({
                 message: "Mohon pilih slot restoran yang sesuai"
             })
