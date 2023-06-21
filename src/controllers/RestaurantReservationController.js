@@ -34,7 +34,7 @@ class RestaurantReservationController extends ExpressController {
 
         const new_slot = await Slot.create({
             restaurant_id: req.user.id,
-            slot_day: validated.slot_day,
+            slot_day: validated.slot_day+1,
             start_time: validated.start_time,
             end_time: validated.end_time,
         })
