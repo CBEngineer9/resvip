@@ -294,6 +294,7 @@ class SeekerReservationController extends ExpressController {
                 ['reservation_id', 'id'],
                 ['reservation_date', 'date'],
                 ['reservation_status', 'status'],
+                ['paid_down_payment', 'paid_down_payment']
             ],
             include: [
                 {
@@ -336,6 +337,7 @@ class SeekerReservationController extends ExpressController {
                 tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
                 jam: `${moment(reservation.Slot.start_time, 'HH:mm:ss').format('HH:mm')} - ${moment(reservation.Slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
                 status: reservation.dataValues.status,
+                down_payment: reservation.dataValues.paid_down_payment==1 ? 'Paid' : 'Not Paid'
             }
         })
     }
@@ -376,6 +378,7 @@ class SeekerReservationController extends ExpressController {
                 ['reservation_id', 'id'],
                 ['reservation_date', 'date'],
                 ['reservation_status', 'status'],
+                ['paid_down_payment', 'paid_down_payment']
             ],
             include: [
                 {
@@ -432,6 +435,7 @@ class SeekerReservationController extends ExpressController {
                 tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMM YYYY'),
                 jam: `${moment(reservation.Slot.start_time, 'HH:mm:ss').format('HH:mm')} - ${moment(reservation.Slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
                 status: reservation.dataValues.status,
+                down_payment: reservation.dataValues.paid_down_payment==1 ? 'Paid' : 'Not Paid'
             }
 
             ret.push(tmp)
