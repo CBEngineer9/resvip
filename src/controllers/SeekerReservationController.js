@@ -7,6 +7,7 @@ const ExpressController = require('./_ExpressController')
 const reservationValid = require('../validations/reservationValid')
 const midtransClient = require('midtrans-client');
 const { response } = require('express')
+const { literal } = require('sequelize')
 
 class SeekerReservationController extends ExpressController {
     //seeker add reservasi
@@ -36,7 +37,7 @@ class SeekerReservationController extends ExpressController {
             })
         }
 
-        const { table_id, slot_id, reservation_date } = req.body
+        const { table_id, slot_id, reservation_date } = req.body;
 
         //match table and slot
         const slot = await Slot.findByPk(slot_id)   
@@ -46,12 +47,12 @@ class SeekerReservationController extends ExpressController {
                 message: "Mohon pilih slot restoran yang sesuai"
             })
         }
-        
+    
         //cek slot & table available
         const reservationAda = await Reservation.findOne({
             where: {
                 table_id: table_id,
-                reservation_date: reservation_date,
+                reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
                 slot_id: slot_id
             }
         })
@@ -66,9 +67,17 @@ class SeekerReservationController extends ExpressController {
             seeker_id: req.user.id,
             table_id: table_id,
             slot_id: slot_id,
-            reservation_date: moment(reservation_date).format('YYYY-MM-DD'),
+            reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             reservation_status: 'WAITING_APPROVAL',
             paid_down_payment: false,
+        })
+
+        const newReservation = await Reservation.findOne({
+            where: {
+                table_id: table_id,
+                reservation_date: moment(reservation_date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                slot_id: slot_id
+            }
         })
 
         // charge midtrans
@@ -77,37 +86,30 @@ class SeekerReservationController extends ExpressController {
             serverKey : process.env.MIDTRANS_SERVER_KEY,
             clientKey : process.env.MIDTRANS_CLIENT_KEY
         });
-
-        const restaurant = await Restaurant.findOne({
-            where: {
-                table_id: table_id
-            }
-        })
-        
+        const restaurant = await Restaurant.findByPk(table.restaurant_id);
+        // 10 percent potongan
         const parameter = {
             "payment_type": "bank_transfer",
             "transaction_details": {
-                "gross_amount": restaurant.restaurant_down_payment,
-                "order_id": "order_id_1",
+                "gross_amount": restaurant.restaurant_down_payment * 110/100,
+                "order_id": "order_id" + newReservation.reservation_id,
             },
             "bank_transfer":{
                 "bank": "bca"
-            }
+            },
         };
         core.charge(parameter)
             .then((chargeResponse)=>{
-                response = JSON.stringify(chargeResponse);
-                console.log(response);
+                return res.status(201).json({
+                    message: "Reservasi berhasil dibuat",
+                    reservation: reservation,
+                    payment: chargeResponse
+                })
             })
             .catch((e)=>{
                 console.log('Error occured:',e.message);
             });
-
-        
-        return res.status(201).json({
-            message: "Reservasi berhasil dibuat",
-            reservation: reservation
-        })
+        return null;
     }
 
     //seeker resechedule reservasi
