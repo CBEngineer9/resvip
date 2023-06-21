@@ -1,6 +1,6 @@
 const Joi = require('joi').extend(require('@joi/date'))
 const moment = require('moment')
-const { Reservation, Table, Slot, Restaurant } = require('../database/models')
+const { Reservation, Table, Slot, Restaurant, Seeker } = require('../database/models')
 const tableValid = require('../validations/tableValid')
 const slotValid = require('../validations/slotValid')
 const ExpressController = require('./_ExpressController')
@@ -25,7 +25,8 @@ class SeekerReservationController extends ExpressController {
                 "any.required": "Tanggal reservasi harus diisi",
                 "date.base": "Tanggal reservasi harus berupa tanggal",
                 "date.format": "Format tanggal harus DD/MM/YYYY"
-            })
+            }),
+            bank_name: Joi.string().valid("bca", "bni", "bri", "BCA", "BNI", "BRI").required(),
         })
         try{
             await schema.validateAsync(req.body,{
@@ -87,37 +88,36 @@ class SeekerReservationController extends ExpressController {
             clientKey : process.env.MIDTRANS_CLIENT_KEY
         });
         const restaurant = await Restaurant.findByPk(table.restaurant_id);
-        // 10 percent potongan
+        const seeker = await Seeker.findByPk(req.user.id);
+        // 5 percent potongan dp
         const parameter = {
             "payment_type": "bank_transfer",
             "transaction_details": {
-                "gross_amount": restaurant.restaurant_down_payment * 110/100,
-                "order_id": "order_id" + newReservation.reservation_id,
+                "gross_amount": restaurant.restaurant_down_payment * 105/100,
+                "order_id": "reservation_id_" + newReservation.reservation_id,
             },
             "bank_transfer":{
-                "bank": "bca"
-            },
+                "bank": req.body.bank_name.toLowerCase(),
+            }
         };
         core.charge(parameter)
             .then((chargeResponse)=>{
                 return res.status(201).json({
                     message: "Reservasi berhasil dibuat",
-                    reservation: reservation,
+                    reservation: {
+                        table_id: reservation.table_id,
+                        slot_id: reservation.slot_id,
+                        reservation_date: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                        reservation_status: 'WAITING_APPROVAL'
+                    },
                     payment: chargeResponse
                 })
             })
             .catch((e)=>{
-                console.log('Error occured:',e.message);
+                return res.status(400).send({
+                    message: e.toString()
+                })
             });        
-        return res.status(201).json({
-            message: "Reservasi berhasil dibuat",
-            reservation: {
-                table_id: reservation.table_id,
-                slot_id: reservation.slot_id,
-                reservation_date: moment(reservation.reservation_date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
-                reservation_status: 'WAITING_APPROVAL'
-            }
-        })
     }
 
     //seeker resechedule reservasi
