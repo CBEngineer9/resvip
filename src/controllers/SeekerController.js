@@ -107,8 +107,8 @@ class SeekerController {
         // validate id restaurant
         const restaurant = await Restaurant.findByPk(req.params.id)
         if (!restaurant) {
-            throw new NotFoundError("ID Restaurant tidak ditemukan",{
-                id: req.params.id
+            return res.status(404).send({
+                message: "Restaurant tidak ditemukan"
             })
         }
 

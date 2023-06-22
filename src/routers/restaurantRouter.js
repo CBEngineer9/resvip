@@ -12,4 +12,7 @@ restaurantRouter.delete('/slot/:id',RestaurantMiddleware, RestaurantReservationC
 restaurantRouter.get("/reservation", RestaurantMiddleware, RestaurantReservationController.getAllReservation)
 restaurantRouter.get("/reservation/:reservation_id", RestaurantMiddleware, RestaurantReservationController.getReservationById)
 
+// update reservation (acc/reject)
+restaurantRouter.put("/reservation/:reservation_id", RestaurantMiddleware, RestaurantReservationController.updateReservation)
+
 module.exports = restaurantRouter;

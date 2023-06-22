@@ -255,25 +255,25 @@ class RestaurantReservationController extends ExpressController {
         })
     }
     
-    //restaurant acc tolak reservasi???
-    async updateReservasi(req,res){
+    // accept / tolak reservasi
+    async updateReservation(req,res){
         const schemaBody = Joi.object({
             table_id: Joi.number().required().messages({
                 "any.required": "ID table harus diisi",
                 "number.base": "ID table harus berupa angka"
             }),
-            reservation_date: Joi.date().required().messages({
-                "any.required": "Tanggal reservasi harus diisi",
-                "date.base": "Tanggal reservasi harus berupa tanggal"
+            slot_id: Joi.string().required().messages({
+                "any.required": "ID Slot harus diisi",
+                "string.base": "ID Slot harus berupa string"
             }),
-            reservation_status: Joi.string().valid(["WAITING_APPROVAL","APPROVED",'REJECTED']).required().messages({
+            reservation_status: Joi.string().valid("WAITING_APPROVAL","APPROVED",'REJECTED').required().messages({
                 "any.required": "Status reservasi harus diisi",
                 "string.base": "Tanggal reservasi harus berupa teks",
                 "valid.base": "Input status tidak sesuai"
             }),
         })
         const schemaParam = Joi.object({
-            id: Joi.number().required().messages({
+            reservation_id: Joi.number().required().messages({
                 "any.required": "ID reservasi harus diisi",
                 "number.base": "ID reservasi harus berupa angka"
             })
@@ -282,7 +282,7 @@ class RestaurantReservationController extends ExpressController {
             await schemaBody.validateAsync(req.body,{
                 convert: true
             })
-            await schemaParam.validateAsync(req.body,{
+            await schemaParam.validateAsync(req.params,{
                 convert: true
             })
         } catch (err) {
@@ -292,31 +292,80 @@ class RestaurantReservationController extends ExpressController {
         }
         
         // not found
-        let reservation = await Reservation.getById(req.params.id);
+        let reservation = await Reservation.findByPk(req.params.reservation_id);
         if(!reservation) {
             return res.status(404).send({
-                message: "Reservasi tidak ditemukan"
+                message: "Reservasi tidak ditemukan!"
             })
         }
     
-        const { table_id, reservation_date, reservation_status } = req.body
-    
+        const { table_id, slot_id, reservation_status } = req.body
+        
+        const table = await Table.findByPk(table_id);
+        if(!table) {
+            return res.status(404).send({
+                message: "Table tidak ditemukan!"
+            })
+        }
+        const slot = await Slot.findByPk(slot_id);
+        if(!slot) {
+            return res.status(404).send({
+                message: "Slot tidak ditemukan!"
+            })
+        }
+        
         // update
         const update = await Reservation.update({
             table_id: table_id,
-            reservation_date: reservation_date,
+            slot_id: slot_id,
             reservation_status: reservation_status
         }, {
             where: {
-                reservation_id: reservation.reservation_id,
+                reservation_id: req.params.reservation_id,
             }
         })
-        
-        reservation = Reservation.getById(req.params.id);
+
+        reservation = await Reservation.findByPk(req.params.reservation_id, {
+            attributes: [
+                ['reservation_id', 'id'],
+                ['reservation_date', 'date'],
+                ['reservation_status', 'status'],
+                ['paid_down_payment', 'paid_down_payment']
+            ],
+            include: [
+                {
+                    model: Table,
+                    attributes: [
+                        ['table_number', 'table_number'],
+                    ]
+                },
+                {
+                    model: Slot,
+                    attributes: [
+                        ['start_time', 'start_time'],
+                        ['end_time', 'end_time'],
+                    ]
+                },
+                {
+                    model: Seeker,
+                    attributes: [
+                        ['seeker_id', 'seeker_id']
+                    ]
+                }
+            ]
+        })
     
         return res.status(201).json({
             message: "Reservasi berhasil diubah",
-            data: reservation
+            reservation: {
+                id: reservation.dataValues.id,
+                table_number: reservation.Table.table_number,
+                seeker_id: reservation.Seeker.seeker_id,
+                tanggal: moment(reservation.dataValues.date, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+                jam: `${moment(reservation.Slot.start_time, 'HH:mm:ss').format('HH:mm')} - ${moment(reservation.Slot.end_time, 'HH:mm:ss').format('HH:mm')}`,
+                status: reservation.dataValues.status,
+                down_payment: reservation.dataValues.paid_down_payment==1 ? 'Paid' : 'Not Paid'
+            }
         })
     }
 }
