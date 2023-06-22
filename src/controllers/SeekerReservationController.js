@@ -174,6 +174,13 @@ class SeekerReservationController extends ExpressController {
         const { reservation_id } = req.params
         const reservation = await Reservation.findByPk(reservation_id)
 
+        //cek tanggal reschedule
+        if(reservation.reservation_status=='APPROVED' && moment(reservation.reservation_date).isBefore(moment())){
+            return res.status(400).send({
+                message: "Reservasi yang sudah berlalu tidak bisa di-reschedule"
+            })
+        }
+
         if(reservation.seeker_id != req.user.id){
             return res.status(403).send({
                 message: 'Anda bukan pemilik reservasi ini'
