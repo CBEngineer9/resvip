@@ -15,4 +15,8 @@ restaurantRouter.get("/reservation/:reservation_id", RestaurantMiddleware, Resta
 // update reservation (acc/reject)
 restaurantRouter.put("/reservation/:reservation_id", RestaurantMiddleware, RestaurantReservationController.updateReservation)
 
+// table
+restaurantRouter.post("/table", RestaurantMiddleware, RestaurantReservationController.insertTable);
+restaurantRouter.get("/table", RestaurantMiddleware, RestaurantReservationController.getAllTables);
+
 module.exports = restaurantRouter;

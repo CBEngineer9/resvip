@@ -313,7 +313,7 @@ class RestaurantReservationController extends ExpressController {
                 message: "Slot tidak ditemukan!"
             })
         }
-        
+
         // update
         const update = await Reservation.update({
             table_id: table_id,
@@ -366,6 +366,65 @@ class RestaurantReservationController extends ExpressController {
                 status: reservation.dataValues.status,
                 down_payment: reservation.dataValues.paid_down_payment==1 ? 'Paid' : 'Not Paid'
             }
+        })
+    }
+
+    async insertTable(req, res) {
+        const schemaBody = Joi.object({
+            table_number: Joi.number().integer().required().messages({
+                "number.integer": "Nomor table harus angka",
+            }),
+        })
+
+        try {
+            await schemaBody.validateAsync(req.body);
+        }
+        catch(e) {
+            return res.status(400).send({
+                message: e.toString()
+            })
+        }
+
+        const table = await Table.findOne({
+            where: {
+                restaurant_id: req.user.id,
+                table_number: req.body.table_number,
+            }
+        })
+
+        if(table) {
+            return res.status(400).send({
+                message: "Table sudah pernah ditambahkan!"
+            })
+        }
+
+        const new_table = await Table.create({
+            restaurant_id: req.user.id,
+            table_number: req.body.table_number,
+        })
+
+        return res.status(201).json({
+            message: "Berhasil membuat slot baru",
+            table: {
+                table_id: new_table.table_id,
+                table_number: new_table.table_number,
+            }
+        })
+    }
+
+    async getAllTables(req, res) {
+        let tables = await Table.findAll({
+            where: {
+                restaurant_id: req.user.id
+            }
+        });
+        tables = tables.map(table => {
+            delete table.createdAt
+            delete table.updatedAt
+            return table
+        })
+        return res.status(200).send({
+            table: tables
         })
     }
 }
