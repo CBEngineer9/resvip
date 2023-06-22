@@ -18,5 +18,7 @@ restaurantRouter.put("/reservation/:reservation_id", RestaurantMiddleware, Resta
 // table
 restaurantRouter.post("/table", RestaurantMiddleware, RestaurantReservationController.insertTable);
 restaurantRouter.get("/table", RestaurantMiddleware, RestaurantReservationController.getAllTables);
+restaurantRouter.put("/table/:table_id", RestaurantMiddleware, RestaurantReservationController.updateTable);
+restaurantRouter.delete("/table/:table_id", RestaurantMiddleware, RestaurantReservationController.deleteTable);
 
 module.exports = restaurantRouter;

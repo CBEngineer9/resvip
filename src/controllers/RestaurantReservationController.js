@@ -404,7 +404,7 @@ class RestaurantReservationController extends ExpressController {
         })
 
         return res.status(201).json({
-            message: "Berhasil membuat slot baru",
+            message: "Berhasil membuat table baru",
             table: {
                 table_id: new_table.table_id,
                 table_number: new_table.table_number,
@@ -425,6 +425,132 @@ class RestaurantReservationController extends ExpressController {
         })
         return res.status(200).send({
             table: tables
+        })
+    }
+
+    async updateTable(req, res) {
+        const schemaBody = Joi.object({
+            table_number: Joi.number().integer().required().messages({
+                "number.integer": "Nomor table harus angka",
+            }),
+        })
+
+        const schemaParam = Joi.object({
+            table_id: Joi.number().integer().required().messages({
+                "number.integer": "ID Table harus angka",
+            }),
+        })
+
+        try {
+            await schemaBody.validateAsync(req.body);
+            await schemaParam.validateAsync(req.params);
+        }
+        catch(e) {
+            return res.status(400).send({
+                message: e.toString()
+            })
+        }
+
+        // table not found
+        let table = await Table.findOne({
+            where: {
+                table_id: req.params.table_id,
+            }
+        })
+
+        if(!table) {
+            return res.status(400).send({
+                message: "Table tidak ditemukan!"
+            })
+        }
+
+        // different restaurant
+        table = await Table.findOne({
+            where: {
+                table_id: req.params.table_id,
+                restaurant_id: req.user.id
+            }
+        })
+
+        if(!table) {
+            return res.status(400).send({
+                message: "Table bukan table milik anda!"
+            })
+        }
+
+        const update = await Table.update({
+            table_number: req.body.table_number,
+        }, {
+            where: {
+                table_id: req.params.table_id
+            }
+        })
+        const new_table = await Table.findByPk(req.params.table_id);
+
+        return res.status(200).json({
+            message: "Berhasil mengubah table",
+            table: {
+                table_id: new_table.table_id,
+                table_number: new_table.table_number,
+            }
+        })
+    }
+
+    async deleteTable(req, res) {
+        const schemaParam = Joi.object({
+            table_id: Joi.number().integer().required().messages({
+                "number.integer": "ID Table harus angka",
+            }),
+        })
+
+        try {
+            await schemaParam.validateAsync(req.params);
+        }
+        catch(e) {
+            return res.status(400).send({
+                message: e.toString()
+            })
+        }
+
+        // table not found
+        let table = await Table.findOne({
+            where: {
+                table_id: req.params.table_id,
+            }
+        })
+
+        if(!table) {
+            return res.status(400).send({
+                message: "Table tidak ditemukan!"
+            })
+        }
+
+        // different restaurant
+        table = await Table.findOne({
+            where: {
+                table_id: req.params.table_id,
+                restaurant_id: req.user.id
+            }
+        })
+
+        if(!table) {
+            return res.status(400).send({
+                message: "Table bukan table milik anda!"
+            })
+        }
+
+        await Table.destroy({
+            where: {
+                table_id: req.params.table_id
+            }
+        })
+
+        return res.status(200).json({
+            message: "Berhasil menghapus table",
+            table: {
+                table_id: table.table_id,
+                table_number: table.table_number,
+            }
         })
     }
 }
