@@ -13,7 +13,7 @@ seekerRouter.get('/reservation', SeekerMiddleware, SeekerReservationController.g
 seekerRouter.get('/reservation/:reservation_id', SeekerMiddleware, SeekerReservationController.getReservationById)
 
 //down payment
-seekerRouter.post('/reservation/notification', SeekerMiddleware, SeekerReservationController.notifyPayment);
+seekerRouter.post('/reservation/notification', SeekerReservationController.notifyPayment);
 
 //restaurant
 seekerRouter.get("/", SeekerMiddleware, SeekerController.fetchRestaurant)
