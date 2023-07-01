@@ -56,7 +56,6 @@ class SeekerController {
 
             const restaurants = await Restaurant.findAll(filter)
 
-            // TODO coords filter
             if (validated.near_coords) {
                 // const thresh = Math.pow(1,2);
 
@@ -120,7 +119,6 @@ class SeekerController {
     getCuisine(req,res){
         // TODO
     }
-
 
 }
 

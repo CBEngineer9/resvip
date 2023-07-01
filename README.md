@@ -24,11 +24,6 @@ Umum
 1. POST Register
 2. POST Login
 
-Admin:
-
-1. GET All User
-2. GET Log Payment Model
-
 Developer (fitur utk travel agent)
 
 1. GET All Restoran + Filter (Cuisine, Price Range, Nearby)
@@ -54,6 +49,47 @@ Developer (fitur utk restoran)
 
 Syarat Proyek :
 
-1. 3rd Party API : HereAPI, ipaymu
+1. 3rd Party API : HereAPI, midtrans
 2. Payment Model : 5% dari DP untuk setiap reservasi yang diterima
 3. Upload File : Customer perlu upload KTP untuk mendaftar
+
+## Pembagian Tugas
+Acxel : 
+1. POST table (Restaurant)
+2. GET table
+3. PUT updateTable
+4. DELETE table
+5. PUT update reservation
+6. External API midtrans & implementasi pada enpoint addReservation (seeker)
+
+Kevin:
+1. Setup Project structure
+2. External API hereAPI & implementasi pada endpoint Register dan getRestaurant (Seeker)
+3. GET slot (Restoran)
+4. POST slot (Restoran)
+5. PUT slot (Restoran)
+6. DELETE slot (Restoran)
+7. GET getValidAddress
+8. GET fetchRestaurant (seeker)
+9. GET getRestaurant (seeker)
+10. Membuat migration
+11. Setup hosting, deployment github workflow
+
+Cherilyn:
+1. POST Register
+2. POST Login
+3. POST Reservasi
+4. PUT Reschedule Reservasi
+5. GET History Reservasi (Seeker)
+6. GET Reservasi by id (Seeker)
+7. GET All Reservasi + Filter by Date (Restoran)
+8. GET Reservasi by id (Restoran)
+9. DELETE Cancel reservasi
+10. Middleware Auth + Role
+11. Membuat seeder
+
+## Dokumentasi API
+Dokumentasi API Resvip dapat anda lihat via postman di <a href='https://documenter.getpostman.com/view/27473843/2s93z58izD'> sini</a>
+
+## Hosted Service
+Resvip bisa anda coba live pada endpoint <a href='https://resvip.glitch.me/'>https://resvip.glitch.me/</a>
